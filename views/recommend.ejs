@@ -1,0 +1,49 @@
+<!-- 메인 컨테이너 -->
+<main class="main-container">
+    <div class="content-wrapper">
+        <div class="page-header">
+            <h2 class="page-title">
+                <i class="fas fa-robot"></i> AI 위스키 추천받기
+            </h2>
+            <p class="page-subtitle">개인화된 AI 추천으로 완벽한 위스키를 찾아보세요</p>
+        </div>
+
+        <div class="content-card">
+            <div class="input-section">
+                <div class="input-group">
+                    <label for="user-query" class="input-label">
+                        <i class="fas fa-comment-dots"></i> 어떤 위스키를 찾고 계신가요?
+                    </label>
+                    <textarea 
+                        id="user-query" 
+                        class="query-input" 
+                        placeholder="예시:
+• '부드럽고 달콤한 위스키 추천해줘'
+• '피트향 강한 싱글몰트 10만원 이하로 찾아줘'
+• '초보자에게 좋은 입문용 위스키는?'
+• '선물용으로 좋은 프리미엄 위스키 추천'"
+                        rows="5"></textarea>
+                </div>
+                <button id="recommend-btn" class="primary-btn">
+                    <i class="fas fa-search"></i> 위스키 추천받기
+                </button>
+            </div>
+            
+            <div id="recommendations-container" class="recommendations-container hidden">
+                <div class="recommendations-header">
+                    <h3 class="recommendations-title">
+                        <i class="fas fa-sparkles"></i> 추천 위스키
+                    </h3>
+                    <div class="recommendation-count">
+                        <span id="recommendation-count-text">0개의 추천 결과</span>
+                    </div>
+                </div>
+                <div id="recommendations-grid" class="whiskey-grid"></div>
+                <div class="feedback-notice">
+                    <i class="fas fa-lightbulb"></i>
+                    <p>추천 결과에 대한 피드백을 주시면 더 정확한 추천을 제공해 드릴 수 있습니다.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>

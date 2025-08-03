@@ -1,0 +1,69 @@
+<!-- 메인 컨테이너 -->
+<main class="main-container">
+    <div class="content-wrapper">
+        <div class="page-header">
+            <h2 class="page-title">
+                <i class="fas fa-user-plus"></i> 회원가입
+            </h2>
+            <p class="page-subtitle">새 계정을 만들어 위스키 추천 서비스를 이용해보세요</p>
+        </div>
+
+        <div class="content-card">
+            <!-- 에러 메시지 표시 -->
+            <% if (locals.error) { %>
+                <div class="error-message">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <%= error %>
+                </div>
+            <% } %>
+            
+            <form action="/register" method="POST" id="signup-form" class="auth-form">
+                <div class="form-group">
+                    <label for="signup-user-id">
+                        <i class="fas fa-id-card"></i>
+                        사용자 ID
+                    </label>
+                    <input type="text" id="signup-user-id" name="user_id" class="form-input" placeholder="사용자 ID를 입력하세요" value="<%= locals.formData ? formData.user_id || '' : '' %>" required>
+                </div>
+                <div class="form-group">
+                    <label for="signup-nickname">
+                        <i class="fas fa-user"></i>
+                        닉네임
+                    </label>
+                    <input type="text" id="signup-nickname" name="nickname" class="form-input" placeholder="닉네임을 입력하세요" value="<%= locals.formData ? formData.nickname || '' : '' %>" required>
+                </div>
+                <div class="form-group">
+                    <label for="signup-password">
+                        <i class="fas fa-lock"></i>
+                        비밀번호
+                    </label>
+                    <input type="password" id="signup-password" name="password" class="form-input" placeholder="비밀번호를 입력하세요" required>
+                </div>
+                <div class="form-group">
+                    <label for="signup-password-confirm">
+                        <i class="fas fa-lock"></i>
+                        비밀번호 확인
+                    </label>
+                    <input type="password" id="signup-password-confirm" name="password_confirm" class="form-input" placeholder="비밀번호를 다시 입력하세요" required>
+                </div>
+                <!--
+                <div class="form-options">
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="agree-terms" name="agree_terms" required>
+                        <span class="checkmark"></span>
+                        <a href="#" class="terms-link">이용약관</a> 및 <a href="#" class="privacy-link">개인정보처리방침</a>에 동의합니다
+                    </label>
+                </div>
+                -->
+                <button type="submit" class="primary-btn full-width">
+                    <i class="fas fa-user-plus"></i>
+                    회원가입
+                </button>
+            </form>
+            
+            <div class="auth-footer">
+                <p>이미 계정이 있으신가요? <a href="/login" class="link-btn">로그인</a></p>
+            </div>
+        </div>
+    </div>
+</main>

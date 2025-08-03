@@ -1,0 +1,142 @@
+<!-- 필터/정렬 사이드바 -->
+<div id="filter-sidebar" class="filter-sidebar">
+    <div class="filter-header">
+        <h2><i class="fas fa-filter"></i> 필터 및 정렬</h2>
+        <button id="close-filter-btn" class="close-btn">
+            <i class="fas fa-times"></i>
+        </button>
+    </div>
+    
+    <div class="filter-section">
+        <h3><i class="fas fa-funnel-dollar"></i> 필터링</h3>
+        <div class="filter-grid">
+            <div class="filter-item">
+                <label><i class="fas fa-glass-whiskey"></i> 위스키 타입</label>
+                <select id="filter-type" class="modern-select">
+                    <option value="">전체</option>
+                    <option value="싱글 몰트">싱글 몰트</option>
+                    <option value="블렌디드">블렌디드</option>
+                    <option value="버번">버번</option>
+                    <option value="라이">라이</option>
+                    <option value="기타">기타</option>
+                </select>
+            </div>
+            <div class="filter-item">
+                <label><i class="fas fa-won-sign"></i> 최소 가격 (원)</label>
+                <input type="number" id="filter-min-price" class="modern-input" min="0" placeholder="0">
+            </div>
+            <div class="filter-item">
+                <label><i class="fas fa-won-sign"></i> 최대 가격 (원)</label>
+                <input type="number" id="filter-max-price" class="modern-input" min="0" placeholder="무제한">
+            </div>
+            <div class="filter-item">
+                <label><i class="fas fa-globe"></i> 국가</label>
+                <input type="text" id="filter-country" class="modern-input" placeholder="예: 스코틀랜드">
+            </div>
+            <div class="filter-item">
+                <label><i class="fas fa-tags"></i> 맛/향 키워드</label>
+                <input type="text" id="filter-keywords" class="modern-input" placeholder="예: 피트, 바닐라">
+            </div>
+        </div>
+    </div>
+
+    <div class="filter-section">
+        <h3><i class="fas fa-sort"></i> 정렬</h3>
+        <div class="filter-grid">
+            <div class="filter-item">
+                <label><i class="fas fa-list"></i> 정렬 기준</label>
+                <select id="sort-by" class="modern-select">
+                    <option value="name">이름</option>
+                    <option value="price">가격</option>
+                    <option value="age">숙성 연수</option>
+                </select>
+            </div>
+            <div class="filter-item">
+                <label><i class="fas fa-sort-amount-down"></i> 정렬 순서</label>
+                <select id="sort-order" class="modern-select">
+                    <option value="asc">오름차순</option>
+                    <option value="desc">내림차순</option>
+                </select>
+            </div>
+        </div>
+    </div>
+
+    <button id="apply-filter-btn" class="apply-btn">
+        <i class="fas fa-check"></i> 필터 및 정렬 적용
+    </button>
+</div>
+
+<!-- 메인 컨테이너 -->
+<main class="main-container">
+    <div class="content-wrapper">
+        <div class="page-header">
+            <h2 class="page-title">
+                <i class="fas fa-list"></i> 전체 위스키 목록
+            </h2>
+            <div class="page-actions">
+                <button id="open-filter-btn" class="filter-btn">
+                    <i class="fas fa-filter"></i> 필터/정렬
+                </button>
+            </div>
+        </div>
+
+        <div class="content-card">
+            <div id="all-whiskey-container" class="whiskey-container">
+                <% if (whiskeys && whiskeys.length > 0) { %>
+                    <div class="whiskey-grid">
+                        <% whiskeys.forEach(whiskey => { %>
+                            <div class="whiskey-card" data-whiskey-id="<%= whiskey.whiskey_id %>">
+                                <div class="whiskey-image">
+                                    <% if (whiskey.image_path) { %>
+                                        <img src="<%= whiskey.image_path %>" alt="<%= whiskey.name %>" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+                                        <div class="whiskey-placeholder" style="display:none;">🥃</div>
+                                    <% } else { %>
+                                        <div class="whiskey-placeholder">🥃</div>
+                                    <% } %>
+                                </div>
+                                <div class="whiskey-info">
+                                    <h3 class="whiskey-name"><%= whiskey.name %></h3>
+                                    <div class="whiskey-details">
+                                        <span class="whiskey-type">
+                                            <i class="fas fa-glass-whiskey"></i>
+                                            <%= whiskey.type || '타입 미상' %>
+                                        </span>
+                                        <span class="whiskey-origin">
+                                            <i class="fas fa-globe"></i>
+                                            <%= whiskey.origin || '원산지 미상' %>
+                                        </span>
+                                        <% if (whiskey.age_years) { %>
+                                            <span class="whiskey-age">
+                                                <i class="fas fa-hourglass-half"></i>
+                                                <%= whiskey.age_years %>년
+                                            </span>
+                                        <% } %>
+                                        <% if (whiskey.alcohol) { %>
+                                            <span class="whiskey-alcohol">
+                                                <i class="fas fa-percentage"></i>
+                                                <%= whiskey.alcohol %>%
+                                            </span>
+                                        <% } %>
+                                    </div>
+                                    <div class="whiskey-price">
+                                        <i class="fas fa-won-sign"></i>
+                                        <%= whiskey.price.toLocaleString() %>원
+                                    </div>
+                                    <button class="view-detail-btn" onclick="openWhiskeyDetail('<%= whiskey.whiskey_id %>')">
+                                        <i class="fas fa-info-circle"></i>
+                                        상세보기
+                                    </button>
+                                </div>
+                            </div>
+                        <% }) %>
+                    </div>
+                <% } else { %>
+                    <div class="empty-state">
+                        <i class="fas fa-glass-whiskey"></i>
+                        <p>위스키 정보가 없습니다.</p>
+                    </div>
+                <% } %>
+            </div>
+        </div>
+    </div>
+</main>

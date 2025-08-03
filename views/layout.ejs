@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= title %></title>
+    <link rel="stylesheet" href="/css/styles.css">
+    <link rel="icon" href="/favicon.ico">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <!-- 헤더 네비게이션 -->
+    <header class="main-header">
+        <div class="header-container">
+            <div class="logo">
+                <i class="fas fa-glass-whiskey"></i>
+                <h1>Oktong</h1>
+            </div>
+            <nav class="main-nav">
+                <a href="/" class="nav-link <%= locals.currentPage === 'index' ? 'active' : '' %>">
+                    <i class="fas fa-list"></i>
+                    <span>전체 위스키 목록</span>
+                </a>
+                <a href="/recent" class="nav-link <%= locals.currentPage === 'recent' ? 'active' : '' %>">
+                    <i class="fas fa-history"></i>
+                    <span>최근 본 위스키</span>
+                </a>
+                <a href="/evaluated" class="nav-link <%= locals.currentPage === 'evaluated' ? 'active' : '' %>">
+                    <i class="fas fa-star"></i>
+                    <span>내가 평가한 위스키</span>
+                </a>
+                <a href="/preferences" class="nav-link <%= locals.currentPage === 'preferences' ? 'active' : '' %>">
+                    <i class="fas fa-heart"></i>
+                    <span>위스키 취향 입력</span>
+                </a>
+                <a href="/recommend" class="nav-link <%= locals.currentPage === 'recommend' ? 'active' : '' %>">
+                    <i class="fas fa-magic"></i>
+                    <span>위스키 추천받기</span>
+                </a>
+            </nav>
+            <div class="user-info">
+                <% if (locals.currentUser && currentUser !== 'guest') { %>
+                    <!-- 로그인된 사용자 -->
+                    <div class="user-profile">
+                        <i class="fas fa-user-circle"></i>
+                        <span class="username"><%= currentUser %></span>
+                        <div class="user-dropdown">
+                            <button class="dropdown-toggle" id="user-menu-toggle">
+                                <i class="fas fa-chevron-down"></i>
+                            </button>
+                            <div class="dropdown-menu hidden" id="user-dropdown-menu">
+                                <a href="/profile" class="dropdown-item">
+                                    <i class="fas fa-user"></i>
+                                    <span>프로필</span>
+                                </a>
+                                <a href="/settings" class="dropdown-item">
+                                    <i class="fas fa-cog"></i>
+                                    <span>설정</span>
+                                </a>
+                                <div class="dropdown-divider"></div>
+                                <a href="/logout" class="dropdown-item logout-btn">
+                                    <i class="fas fa-sign-out-alt"></i>
+                                    <span>로그아웃</span>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                <% } else { %>
+                    <!-- 로그인되지 않은 사용자 -->
+                    <div class="auth-buttons">
+                        <a href="/login" class="login-btn">
+                            <i class="fas fa-sign-in-alt"></i>
+                            <span>로그인</span>
+                        </a>
+                        <a href="/register" class="signup-btn">
+                            <i class="fas fa-user-plus"></i>
+                            <span>회원가입</span>
+                        </a>
+                    </div>
+                <% } %>
+            </div>
+        </div>
+    </header>
+
+    <!-- 로딩 스피너 -->
+    <div id="loading-spinner" class="loading-overlay hidden">
+        <div class="loading-content">
+            <div class="loading-spinner"></div>
+            <p>로딩 중...</p>
+        </div>
+    </div>
+
+    <!-- 알림 토스트 -->
+    <div id="toast-notification" class="toast-notification hidden">
+        <i class="fas fa-info-circle"></i>
+        <span id="toast-text"></span>
+        <button id="toast-close" class="toast-close">×</button>
+    </div>
+
+    <!-- 페이지별 컨텐츠가 여기에 들어감 -->
+    <%- body %>
+
+    <!-- 위스키 상세 모달 -->
+    <div id="whiskey-modal" class="modal hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modal-title">위스키 상세 정보</h2>
+                <button id="close-modal-btn" class="close-btn">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div id="modal-whiskey-info"></div>
+                <div class="tasting-note-section">
+                    <h3>평가 노트 작성</h3>
+                    <div class="rating-grid">
+                        <div class="rating-item">
+                            <label>총점 (1-5):</label>
+                            <input type="range" id="overall-rating" min="1" max="5" value="3">
+                            <span id="overall-rating-value">3</span>
+                        </div>
+                        <div class="rating-item">
+                            <label>바디감 (0-5):</label>
+                            <input type="range" id="body-rating" min="0" max="5" value="3">
+                            <span id="body-rating-value">3</span>
+                        </div>
+                        <div class="rating-item">
+                            <label>풍미 (0-5):</label>
+                            <input type="range" id="richness-rating" min="0" max="5" value="3">
+                            <span id="richness-rating-value">3</span>
+                        </div>
+                        <div class="rating-item">
+                            <label>스모키함 (0-5):</label>
+                            <input type="range" id="smokiness-rating" min="0" max="5" value="3">
+                            <span id="smokiness-rating-value">3</span>
+                        </div>
+                        <div class="rating-item">
+                            <label>단맛 (0-5):</label>
+                            <input type="range" id="sweetness-rating" min="0" max="5" value="3">
+                            <span id="sweetness-rating-value">3</span>
+                        </div>
+                    </div>
+                    <textarea id="review-text" placeholder="이 위스키에 대한 의견을 남겨주세요..."></textarea>
+                    <button id="submit-review-btn" class="primary-btn">평가 제출</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/js/script.js"></script>
+</body>
+</html>

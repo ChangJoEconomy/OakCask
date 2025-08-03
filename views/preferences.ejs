@@ -1,0 +1,89 @@
+<!-- 메인 컨테이너 -->
+<main class="main-container">
+    <div class="content-wrapper">
+        <div class="page-header">
+            <h2 class="page-title">
+                <i class="fas fa-sliders-h"></i> 위스키 취향 입력
+            </h2>
+            <p class="page-subtitle">개인화된 추천을 위해 선호하는 위스키 스타일을 알려주세요</p>
+        </div>
+
+        <div class="content-card">
+            <div class="preferences-grid">
+                <div class="preference-item">
+                    <label><i class="fas fa-weight-hanging"></i> 바디감</label>
+                    <div class="slider-container">
+                        <input type="range" id="body-pref" min="0" max="5" value="3" class="modern-slider">
+                        <div class="slider-labels">
+                            <span>가벼움</span>
+                            <span id="body-value" class="slider-value">3</span>
+                            <span>무거움</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="preference-item">
+                    <label><i class="fas fa-palette"></i> 풍미</label>
+                    <div class="slider-container">
+                        <input type="range" id="richness-pref" min="0" max="5" value="3" class="modern-slider">
+                        <div class="slider-labels">
+                            <span>단순함</span>
+                            <span id="richness-value" class="slider-value">3</span>
+                            <span>복합적</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="preference-item">
+                    <label><i class="fas fa-fire"></i> 스모키함</label>
+                    <div class="slider-container">
+                        <input type="range" id="smokiness-pref" min="0" max="5" value="3" class="modern-slider">
+                        <div class="slider-labels">
+                            <span>없음</span>
+                            <span id="smokiness-value" class="slider-value">3</span>
+                            <span>강함</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="preference-item">
+                    <label><i class="fas fa-candy-cane"></i> 단맛</label>
+                    <div class="slider-container">
+                        <input type="range" id="sweetness-pref" min="0" max="5" value="3" class="modern-slider">
+                        <div class="slider-labels">
+                            <span>드라이</span>
+                            <span id="sweetness-value" class="slider-value">3</span>
+                            <span>달콤함</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="preference-item full-width">
+                    <label><i class="fas fa-won-sign"></i> 선호 최소 가격</label>
+                    <div class="slider-container">
+                        <input type="range" id="min-price-pref" min="0" max="500000" step="10000" value="0" class="modern-slider">
+                        <div class="slider-labels">
+                            <span>0원</span>
+                            <span id="min-price-value" class="slider-value">0원</span>
+                            <span>500,000원</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="preference-item full-width">
+                    <label><i class="fas fa-won-sign"></i> 선호 최대 가격</label>
+                    <div class="slider-container">
+                        <input type="range" id="max-price-pref" min="0" max="500000" step="10000" value="200000" class="modern-slider">
+                        <div class="slider-labels">
+                            <span>0원</span>
+                            <span id="max-price-value" class="slider-value">200,000원</span>
+                            <span>500,000원</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="preference-item full-width">
+                    <label><i class="fas fa-tags"></i> 선호 맛/향 키워드</label>
+                    <textarea id="flavor-keywords" class="modern-textarea" placeholder="예: 피트, 스모키, 바닐라, 꿀 (쉼표로 구분)"></textarea>
+                </div>
+            </div>
+            <button id="save-preferences-btn" class="primary-btn">
+                <i class="fas fa-save"></i> 취향 저장
+            </button>
+        </div>
+    </div>
+</main>
