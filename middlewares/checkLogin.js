@@ -15,16 +15,12 @@ const checkLogin = asyncHandler(async (req, res, next) => {
 
     try {
         const decoded = jwt.verify(token, jwtSecret);
-        
-        // 토큰이 유효하면 사용자 정보를 req.user에 저장
-        console.log("토큰 검증 성공:", decoded);
-        
         // nickname 정보를 데이터베이스에서 가져오기
         const user = await User.findOne({ user_id: decoded.user_id }).select('nickname');
         if (user) {
             decoded.nickname = user.nickname;
         }
-        
+        // req.user에 사용자 정보를 저장
         req.user = decoded;
         next();
     } catch (err) {
