@@ -14,11 +14,12 @@
                 <label><i class="fas fa-glass-whiskey"></i> 위스키 타입</label>
                 <select id="filter-type" class="modern-select">
                     <option value="">전체</option>
-                    <option value="싱글 몰트" <%= filters && filters.type === '싱글 몰트' ? 'selected' : '' %>>싱글 몰트</option>
-                    <option value="블렌디드" <%= filters && filters.type === '블렌디드' ? 'selected' : '' %>>블렌디드</option>
-                    <option value="버번" <%= filters && filters.type === '버번' ? 'selected' : '' %>>버번</option>
-                    <option value="라이" <%= filters && filters.type === '라이' ? 'selected' : '' %>>라이</option>
-                    <option value="기타" <%= filters && filters.type === '기타' ? 'selected' : '' %>>기타</option>
+                    <option value="SINGLE_MALT" <%= filters && filters.type === 'SINGLE_MALT' ? 'selected' : '' %>>싱글 몰트</option>
+                    <option value="BLENDED" <%= filters && filters.type === 'BLENDED' ? 'selected' : '' %>>블렌디드</option>
+                    <option value="BOURBON" <%= filters && filters.type === 'BOURBON' ? 'selected' : '' %>>버번</option>
+                    <option value="RYE" <%= filters && filters.type === 'RYE' ? 'selected' : '' %>>라이</option>
+                    <option value="GRAIN" <%= filters && filters.type === 'GRAIN' ? 'selected' : '' %>>그레인</option>
+                    <option value="OTHER" <%= filters && filters.type === 'OTHER' ? 'selected' : '' %>>기타</option>
                 </select>
             </div>
             <div class="filter-item">
