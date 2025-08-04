@@ -16,6 +16,7 @@ const {
 } = require("../controllers/recent");
 const {
     getRecommendPage,
+    getAIRecommendation
 } = require("../controllers/recommend");
 const {
     getLoginPage,
@@ -56,6 +57,10 @@ router.route('/recent')
 
 router.route('/recommend')
     .get(checkLogin, redirectIfNotLoggedIn, getRecommendPage);
+
+// API 라우트 추가 (이 부분이 빠져있었음!)
+router.route('/api/recommend')
+    .post(checkLogin, getAIRecommendation);
 
 router.route('/login')
     .get(getLoginPage)

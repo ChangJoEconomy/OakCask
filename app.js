@@ -29,6 +29,7 @@ app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
 // 라우트 설정
+app.use("/api/whiskey-db", require("./routes/whiskey"));
 app.use("/", require("./routes/main"));
 
 app.listen(port, () => {
