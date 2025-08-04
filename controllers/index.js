@@ -8,22 +8,97 @@ const getHomePage = asyncHandler(async (req, res) => {
     const limit = 24; // 한 페이지당 위스키 개수
     const skip = (page - 1) * limit;
 
-    // db에서 페이지네이션된 위스키 가져오기 (limit개수만큼만 가져오기)
-    const whiskeys = await Whiskey.find({})
+    // 필터링 파라미터 받기
+    const {
+        type,
+        minPrice,
+        maxPrice,
+        country,
+        keywords,
+        sortBy = 'name',
+        sortOrder = 'asc'
+    } = req.query;
+
+    // MongoDB 쿼리 조건 객체 생성
+    let filter = {};
+
+    // 위스키 타입 필터
+    if (type && type.trim() !== '') {
+        filter.type = { $regex: type.trim(), $options: 'i' };
+    }
+
+    // 가격 범위 필터
+    if (minPrice || maxPrice) {
+        filter.price = {};
+        if (minPrice && !isNaN(parseInt(minPrice))) {
+            filter.price.$gte = parseInt(minPrice);
+        }
+        if (maxPrice && !isNaN(parseInt(maxPrice))) {
+            filter.price.$lte = parseInt(maxPrice);
+        }
+    }
+
+    // 국가/지역 필터
+    if (country && country.trim() !== '') {
+        filter.origin = { $regex: country.trim(), $options: 'i' };
+    }
+
+    // 위스키 이름 검색
+    if (keywords && keywords.trim() !== '') {
+        filter.name = { $regex: keywords.trim(), $options: 'i' };
+    }
+
+    // 정렬 옵션 설정
+    let sortOptions = {};
+    switch (sortBy) {
+        case 'price':
+            sortOptions.price = sortOrder === 'desc' ? -1 : 1;
+            break;
+        case 'age':
+            sortOptions.age_years = sortOrder === 'desc' ? -1 : 1;
+            break;
+        case 'name':
+        default:
+            sortOptions.name = sortOrder === 'desc' ? -1 : 1;
+            break;
+    }
+
+    // db에서 필터링된 위스키 가져오기
+    const whiskeys = await Whiskey.find(filter)
         .select('whiskey_id name origin type price alcohol age_years image_path')
-        .sort({ name: 1 }) // 이름순 정렬
+        .sort(sortOptions)
         .skip(skip)
         .limit(limit);
 
-    // 전체 위스키 개수 구하기 (페이지네이션 계산용)
-    const totalWhiskeys = await Whiskey.countDocuments();
+    // 필터링된 위스키 총 개수 구하기
+    const totalWhiskeys = await Whiskey.countDocuments(filter);
     const totalPages = Math.ceil(totalWhiskeys / limit);
+
+    // 쿼리 파라미터를 페이지네이션 링크에 포함하기 위한 객체
+    const queryParams = {
+        ...(type && { type }),
+        ...(minPrice && { minPrice }),
+        ...(maxPrice && { maxPrice }),
+        ...(country && { country }),
+        ...(keywords && { keywords }),
+        ...(sortBy !== 'name' && { sortBy }),
+        ...(sortOrder !== 'asc' && { sortOrder })
+    };
 
     res.render('index', {
         title: '전체 위스키 목록 - Oktong',
-        currentUser: req.user ? req.user.nickname : 'guest', // 로그인된 사용자의 닉네임 또는 guest
+        currentUser: req.user ? req.user.nickname : 'guest',
         currentPage: 'index',
         whiskeys: whiskeys,
+        filters: {
+            type: type || '',
+            minPrice: minPrice || '',
+            maxPrice: maxPrice || '',
+            country: country || '',
+            keywords: keywords || '',
+            sortBy: sortBy || 'name',
+            sortOrder: sortOrder || 'asc'
+        },
         pagination: {
             currentPage: page,
             totalPages: totalPages,
@@ -31,7 +106,8 @@ const getHomePage = asyncHandler(async (req, res) => {
             hasNext: page < totalPages,
             hasPrev: page > 1,
             nextPage: page + 1,
-            prevPage: page - 1
+            prevPage: page - 1,
+            queryParams: queryParams
         }
     });
 });

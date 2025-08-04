@@ -14,28 +14,28 @@
                 <label><i class="fas fa-glass-whiskey"></i> 위스키 타입</label>
                 <select id="filter-type" class="modern-select">
                     <option value="">전체</option>
-                    <option value="싱글 몰트">싱글 몰트</option>
-                    <option value="블렌디드">블렌디드</option>
-                    <option value="버번">버번</option>
-                    <option value="라이">라이</option>
-                    <option value="기타">기타</option>
+                    <option value="싱글 몰트" <%= filters && filters.type === '싱글 몰트' ? 'selected' : '' %>>싱글 몰트</option>
+                    <option value="블렌디드" <%= filters && filters.type === '블렌디드' ? 'selected' : '' %>>블렌디드</option>
+                    <option value="버번" <%= filters && filters.type === '버번' ? 'selected' : '' %>>버번</option>
+                    <option value="라이" <%= filters && filters.type === '라이' ? 'selected' : '' %>>라이</option>
+                    <option value="기타" <%= filters && filters.type === '기타' ? 'selected' : '' %>>기타</option>
                 </select>
             </div>
             <div class="filter-item">
                 <label><i class="fas fa-won-sign"></i> 최소 가격 (원)</label>
-                <input type="number" id="filter-min-price" class="modern-input" min="0" placeholder="0">
+                <input type="number" id="filter-min-price" class="modern-input" min="0" placeholder="0" value="<%= filters && filters.minPrice || '' %>">
             </div>
             <div class="filter-item">
                 <label><i class="fas fa-won-sign"></i> 최대 가격 (원)</label>
-                <input type="number" id="filter-max-price" class="modern-input" min="0" placeholder="무제한">
+                <input type="number" id="filter-max-price" class="modern-input" min="0" placeholder="무제한" value="<%= filters && filters.maxPrice || '' %>">
             </div>
             <div class="filter-item">
                 <label><i class="fas fa-globe"></i> 국가</label>
-                <input type="text" id="filter-country" class="modern-input" placeholder="예: 스코틀랜드">
+                <input type="text" id="filter-country" class="modern-input" placeholder="예: 스코틀랜드" value="<%= filters && filters.country || '' %>">
             </div>
             <div class="filter-item">
-                <label><i class="fas fa-tags"></i> 맛/향 키워드</label>
-                <input type="text" id="filter-keywords" class="modern-input" placeholder="예: 피트, 바닐라">
+                <label><i class="fas fa-search"></i> 위스키 이름 검색</label>
+                <input type="text" id="filter-keywords" class="modern-input" placeholder="예: 맥캘란, 글렌피딕" value="<%= filters && filters.keywords || '' %>">
             </div>
         </div>
     </div>
@@ -46,23 +46,27 @@
             <div class="filter-item">
                 <label><i class="fas fa-list"></i> 정렬 기준</label>
                 <select id="sort-by" class="modern-select">
-                    <option value="name">이름</option>
-                    <option value="price">가격</option>
-                    <option value="age">숙성 연수</option>
+                    <option value="name" <%= filters && filters.sortBy === 'name' ? 'selected' : '' %>>이름</option>
+                    <option value="price" <%= filters && filters.sortBy === 'price' ? 'selected' : '' %>>가격</option>
+                    <option value="age" <%= filters && filters.sortBy === 'age' ? 'selected' : '' %>>숙성 연수</option>
                 </select>
             </div>
             <div class="filter-item">
                 <label><i class="fas fa-sort-amount-down"></i> 정렬 순서</label>
                 <select id="sort-order" class="modern-select">
-                    <option value="asc">오름차순</option>
-                    <option value="desc">내림차순</option>
+                    <option value="asc" <%= filters && filters.sortOrder === 'asc' ? 'selected' : '' %>>오름차순</option>
+                    <option value="desc" <%= filters && filters.sortOrder === 'desc' ? 'selected' : '' %>>내림차순</option>
                 </select>
             </div>
         </div>
     </div>
 
-    <button id="apply-filter-btn" class="apply-btn">
+    <button id="apply-filter-btn" class="apply-filter-btn">
         <i class="fas fa-check"></i> 필터 및 정렬 적용
+    </button>
+    
+    <button id="reset-filter-btn" class="reset-btn" onclick="resetFilters()">
+        <i class="fas fa-undo"></i> 필터 초기화
     </button>
 </div>
 
@@ -94,29 +98,25 @@
                                         <div class="whiskey-placeholder">🥃</div>
                                     <% } %>
                                 </div>
+                                <h3 class="whiskey-name"><%= whiskey.name %></h3>
                                 <div class="whiskey-info">
-                                    <h3 class="whiskey-name"><%= whiskey.name %></h3>
                                     <div class="whiskey-details">
                                         <span class="whiskey-type">
                                             <i class="fas fa-glass-whiskey"></i>
-                                            <%= whiskey.type || '타입 미상' %>
+                                            <%= whiskey.type || '-' %>
                                         </span>
                                         <span class="whiskey-origin">
                                             <i class="fas fa-globe"></i>
-                                            <%= whiskey.origin || '원산지 미상' %>
+                                            <%= whiskey.origin || '-' %>
                                         </span>
-                                        <% if (whiskey.age_years) { %>
-                                            <span class="whiskey-age">
-                                                <i class="fas fa-hourglass-half"></i>
-                                                <%= whiskey.age_years %>년
-                                            </span>
-                                        <% } %>
-                                        <% if (whiskey.alcohol) { %>
-                                            <span class="whiskey-alcohol">
-                                                <i class="fas fa-percentage"></i>
-                                                <%= whiskey.alcohol %>%
-                                            </span>
-                                        <% } %>
+                                        <span class="whiskey-age">
+                                            <i class="fas fa-hourglass-half"></i>
+                                            <%= whiskey.age_years ? whiskey.age_years + '년' : '-' %>
+                                        </span>
+                                        <span class="whiskey-alcohol">
+                                            <i class="fas fa-percentage"></i>
+                                            <%= whiskey.alcohol ? whiskey.alcohol + '%' : '-' %>
+                                        </span>
                                     </div>
                                     <div class="whiskey-price">
                                         <i class="fas fa-won-sign"></i>
@@ -140,6 +140,23 @@
             
             <!-- 페이지네이션 -->
             <% if (pagination && pagination.totalPages > 1) { %>
+                <%
+                // 쿼리 파라미터를 URL에 포함하기 위한 헬퍼 함수
+                function buildPaginationUrl(page) {
+                    const params = new URLSearchParams();
+                    params.set('page', page);
+                    
+                    if (pagination.queryParams) {
+                        Object.keys(pagination.queryParams).forEach(key => {
+                            if (pagination.queryParams[key]) {
+                                params.set(key, pagination.queryParams[key]);
+                            }
+                        });
+                    }
+                    
+                    return '?' + params.toString();
+                }
+                %>
                 <div class="pagination-wrapper">
                     <div class="pagination-info">
                         총 <%= pagination.totalWhiskeys %>개의 위스키 중 
@@ -147,10 +164,10 @@
                     </div>
                     <div class="pagination">
                         <% if (pagination.hasPrev) { %>
-                            <a href="?page=1" class="pagination-btn first">
+                            <a href="<%= buildPaginationUrl(1) %>" class="pagination-btn first">
                                 <i class="fas fa-angle-double-left"></i>
                             </a>
-                            <a href="?page=<%= pagination.prevPage %>" class="pagination-btn prev">
+                            <a href="<%= buildPaginationUrl(pagination.prevPage) %>" class="pagination-btn prev">
                                 <i class="fas fa-angle-left"></i>
                             </a>
                         <% } %>
@@ -164,15 +181,15 @@
                             <% if (i === pagination.currentPage) { %>
                                 <span class="pagination-btn current"><%= i %></span>
                             <% } else { %>
-                                <a href="?page=<%= i %>" class="pagination-btn"><%= i %></a>
+                                <a href="<%= buildPaginationUrl(i) %>" class="pagination-btn"><%= i %></a>
                             <% } %>
                         <% } %>
                         
                         <% if (pagination.hasNext) { %>
-                            <a href="?page=<%= pagination.nextPage %>" class="pagination-btn next">
+                            <a href="<%= buildPaginationUrl(pagination.nextPage) %>" class="pagination-btn next">
                                 <i class="fas fa-angle-right"></i>
                             </a>
-                            <a href="?page=<%= pagination.totalPages %>" class="pagination-btn last">
+                            <a href="<%= buildPaginationUrl(pagination.totalPages) %>" class="pagination-btn last">
                                 <i class="fas fa-angle-double-right"></i>
                             </a>
                         <% } %>

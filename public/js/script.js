@@ -522,8 +522,10 @@ class WhiskeyApp {
 
     applyFilters() {
         // Mock 필터링 구현
-        alert('필터가 적용되었습니다!');
-        this.closeFilterSidebar();
+        //alert('필터가 적용되었습니다!');
+
+        // 필터창 닫기 안함 (새로고침 되면서 부자연스러움)
+        //this.closeFilterSidebar();
     }
 
     openWhiskeyModal(whiskey) {
@@ -778,4 +780,112 @@ async function openWhiskeyDetail(whiskeyId) {
 document.addEventListener('DOMContentLoaded', () => {
     new WhiskeyApp();
     new AuthManager();
+    initializeFiltering();
 });
+
+// 필터링 및 정렬 기능
+function initializeFiltering() {
+    const filterSidebar = document.getElementById('filter-sidebar');
+    const openFilterBtn = document.getElementById('open-filter-btn');
+    const closeFilterBtn = document.getElementById('close-filter-btn');
+    const applyFilterBtn = document.getElementById('apply-filter-btn');
+
+    // 필터 사이드바 열기/닫기
+    if (openFilterBtn) {
+        openFilterBtn.addEventListener('click', () => {
+            filterSidebar.classList.add('open');
+        });
+    }
+
+    if (closeFilterBtn) {
+        closeFilterBtn.addEventListener('click', () => {
+            filterSidebar.classList.remove('open');
+        });
+    }
+
+    // 필터 적용 버튼
+    if (applyFilterBtn) {
+        applyFilterBtn.addEventListener('click', applyFilters);
+    }
+
+    // 현재 URL의 쿼리 파라미터를 폼에 설정
+    setCurrentFilters();
+}
+
+// 현재 URL의 필터 값을 폼에 설정
+function setCurrentFilters() {
+    const urlParams = new URLSearchParams(window.location.search);
+    
+    const filterType = document.getElementById('filter-type');
+    const filterMinPrice = document.getElementById('filter-min-price');
+    const filterMaxPrice = document.getElementById('filter-max-price');
+    const filterCountry = document.getElementById('filter-country');
+    const filterKeywords = document.getElementById('filter-keywords');
+    const sortBy = document.getElementById('sort-by');
+    const sortOrder = document.getElementById('sort-order');
+
+    if (filterType && urlParams.get('type')) {
+        filterType.value = urlParams.get('type');
+    }
+    if (filterMinPrice && urlParams.get('minPrice')) {
+        filterMinPrice.value = urlParams.get('minPrice');
+    }
+    if (filterMaxPrice && urlParams.get('maxPrice')) {
+        filterMaxPrice.value = urlParams.get('maxPrice');
+    }
+    if (filterCountry && urlParams.get('country')) {
+        filterCountry.value = urlParams.get('country');
+    }
+    if (filterKeywords && urlParams.get('keywords')) {
+        filterKeywords.value = urlParams.get('keywords');
+    }
+    if (sortBy && urlParams.get('sortBy')) {
+        sortBy.value = urlParams.get('sortBy');
+    }
+    if (sortOrder && urlParams.get('sortOrder')) {
+        sortOrder.value = urlParams.get('sortOrder');
+    }
+}
+
+// 필터 적용
+function applyFilters() {
+    const filterType = document.getElementById('filter-type').value;
+    const filterMinPrice = document.getElementById('filter-min-price').value;
+    const filterMaxPrice = document.getElementById('filter-max-price').value;
+    const filterCountry = document.getElementById('filter-country').value;
+    const filterKeywords = document.getElementById('filter-keywords').value;
+    const sortBy = document.getElementById('sort-by').value;
+    const sortOrder = document.getElementById('sort-order').value;
+
+    // URL 파라미터 생성
+    const params = new URLSearchParams();
+    
+    if (filterType) params.set('type', filterType);
+    if (filterMinPrice) params.set('minPrice', filterMinPrice);
+    if (filterMaxPrice) params.set('maxPrice', filterMaxPrice);
+    if (filterCountry) params.set('country', filterCountry);
+    if (filterKeywords) params.set('keywords', filterKeywords);
+    if (sortBy && sortBy !== 'name') params.set('sortBy', sortBy);
+    if (sortOrder && sortOrder !== 'asc') params.set('sortOrder', sortOrder);
+    
+    // 페이지는 1로 리셋
+    params.set('page', '1');
+
+    // 페이지 이동
+    const newUrl = window.location.pathname + '?' + params.toString();
+    window.location.href = newUrl;
+}
+
+// 필터 초기화
+function resetFilters() {
+    document.getElementById('filter-type').value = '';
+    document.getElementById('filter-min-price').value = '';
+    document.getElementById('filter-max-price').value = '';
+    document.getElementById('filter-country').value = '';
+    document.getElementById('filter-keywords').value = '';
+    document.getElementById('sort-by').value = 'name';
+    document.getElementById('sort-order').value = 'asc';
+    
+    // 페이지 이동 (모든 필터 제거)
+    window.location.href = window.location.pathname;
+}
