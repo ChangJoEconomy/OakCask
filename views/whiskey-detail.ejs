@@ -184,6 +184,93 @@
     </div>
 </div>
 
+<!-- 사용자 리뷰 섹션 -->
+<div class="user-reviews-section">
+    <div class="reviews-header">
+        <h3 class="reviews-title">
+            <i class="fas fa-comments"></i> 사용자 리뷰 (<%= reviewCount %>개)
+        </h3>
+        <% if (reviewCount > 0) { %>
+            <div class="average-rating">
+                <i class="fas fa-star"></i>
+                <span class="rating-value"><%= averageRating %></span>
+                <span class="rating-label">평균 평점</span>
+            </div>
+        <% } %>
+    </div>
+
+    <div class="reviews-container">
+        <% if (reviewCount === 0) { %>
+            <div class="no-reviews">
+                <i class="fas fa-comment-slash"></i>
+                <p>아직 작성된 리뷰가 없습니다.</p>
+                <p>첫 번째 리뷰를 남겨보세요!</p>
+            </div>
+        <% } else { %>
+            <% reviews.forEach(review => { %>
+                <div class="review-card">
+                    <div class="review-header">
+                        <div class="reviewer-info">
+                            <i class="fas fa-user-circle"></i>
+                            <span class="reviewer-name"><%= review.userInfo.username %></span>
+                        </div>
+                        <div class="review-meta">
+                            <div class="review-rating">
+                                <i class="fas fa-star"></i>
+                                <span><%= review.rating %></span>
+                            </div>
+                            <div class="review-date">
+                                <%= new Date(review.write_date).toLocaleDateString('ko-KR') %>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="review-content">
+                        <% if (review.review_text && typeof review.review_text === 'string' && review.review_text.trim()) { %>
+                            <p class="review-text"><%= review.review_text %></p>
+                        <% } %>
+                        
+                        <div class="review-details">
+                            <div class="detail-item">
+                                <span class="detail-label">바디감</span>
+                                <div class="detail-rating">
+                                    <% for (let i = 1; i <= 5; i++) { %>
+                                        <i class="fas fa-circle <%= i <= (review.body || 0) ? 'active' : '' %>"></i>
+                                    <% } %>
+                                </div>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">풍미</span>
+                                <div class="detail-rating">
+                                    <% for (let i = 1; i <= 5; i++) { %>
+                                        <i class="fas fa-circle <%= i <= review.richness ? 'active' : '' %>"></i>
+                                    <% } %>
+                                </div>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">스모키함</span>
+                                <div class="detail-rating">
+                                    <% for (let i = 1; i <= 5; i++) { %>
+                                        <i class="fas fa-circle <%= i <= review.smoke ? 'active' : '' %>"></i>
+                                    <% } %>
+                                </div>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">단맛</span>
+                                <div class="detail-rating">
+                                    <% for (let i = 1; i <= 5; i++) { %>
+                                        <i class="fas fa-circle <%= i <= review.sweetness ? 'active' : '' %>"></i>
+                                    <% } %>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            <% }); %>
+        <% } %>
+    </div>
+</div>
+
 <script>
 // 평가 모달 열기
 async function openReviewModal(whiskeyId) {

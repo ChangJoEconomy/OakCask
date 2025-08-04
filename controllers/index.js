@@ -1,5 +1,7 @@
 const asyncHandler = require('express-async-handler');
 const Whiskey = require('../models/whiskeyModel');
+const WhiskeyReview = require('../models/WhiskeyReview');
+const User = require('../models/userModel');
 
 // @desc home page (전체 위스키 목록)
 // @route GET /
@@ -125,13 +127,54 @@ const getWhiskeyDetailPage = asyncHandler(async (req, res) => {
             errorMessage: '요청하신 위스키를 찾을 수 없습니다.'
         });
     }
+
+    // 해당 위스키의 모든 리뷰 가져오기 (사용자 정보와 함께)
+    const reviews = await WhiskeyReview.aggregate([
+        {
+            $match: { whiskey_id: req.params.id }
+        },
+        {
+            $lookup: {
+                from: 'users',
+                localField: 'user_id',
+                foreignField: 'user_id',
+                as: 'userInfo'
+            }
+        },
+        {
+            $unwind: '$userInfo'
+        },
+        {
+            $project: {
+                rating: 1,
+                review_text: 1,
+                body: 1,
+                richness: 1,
+                smoke: 1,
+                sweetness: 1,
+                write_date: 1,
+                'userInfo.username': 1
+            }
+        },
+        {
+            $sort: { write_date: -1 }
+        }
+    ]);
+
+    // 평균 평점 계산
+    const averageRating = reviews.length > 0 
+        ? (reviews.reduce((sum, review) => sum + review.rating, 0) / reviews.length).toFixed(1)
+        : 0;
     
     res.render('whiskey-detail', {
         title: `${whiskey.name} - Oktong`,
         currentUser: req.user ? req.user.nickname : 'guest',
         currentPage: 'whiskey-detail',
         whiskey: whiskey,
-        user: req.user // 사용자 정보 추가
+        user: req.user, // 사용자 정보 추가
+        reviews: reviews,
+        reviewCount: reviews.length,
+        averageRating: averageRating
     });
 });
 
