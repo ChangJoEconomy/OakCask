@@ -137,6 +137,48 @@
                     </div>
                 <% } %>
             </div>
+            
+            <!-- 페이지네이션 -->
+            <% if (pagination && pagination.totalPages > 1) { %>
+                <div class="pagination-wrapper">
+                    <div class="pagination-info">
+                        총 <%= pagination.totalWhiskeys %>개의 위스키 중 
+                        <%= ((pagination.currentPage - 1) * 24) + 1 %>~<%= Math.min(pagination.currentPage * 24, pagination.totalWhiskeys) %>개 표시
+                    </div>
+                    <div class="pagination">
+                        <% if (pagination.hasPrev) { %>
+                            <a href="?page=1" class="pagination-btn first">
+                                <i class="fas fa-angle-double-left"></i>
+                            </a>
+                            <a href="?page=<%= pagination.prevPage %>" class="pagination-btn prev">
+                                <i class="fas fa-angle-left"></i>
+                            </a>
+                        <% } %>
+                        
+                        <% 
+                        let startPage = Math.max(1, pagination.currentPage - 2);
+                        let endPage = Math.min(pagination.totalPages, pagination.currentPage + 2);
+                        %>
+                        
+                        <% for (let i = startPage; i <= endPage; i++) { %>
+                            <% if (i === pagination.currentPage) { %>
+                                <span class="pagination-btn current"><%= i %></span>
+                            <% } else { %>
+                                <a href="?page=<%= i %>" class="pagination-btn"><%= i %></a>
+                            <% } %>
+                        <% } %>
+                        
+                        <% if (pagination.hasNext) { %>
+                            <a href="?page=<%= pagination.nextPage %>" class="pagination-btn next">
+                                <i class="fas fa-angle-right"></i>
+                            </a>
+                            <a href="?page=<%= pagination.totalPages %>" class="pagination-btn last">
+                                <i class="fas fa-angle-double-right"></i>
+                            </a>
+                        <% } %>
+                    </div>
+                </div>
+            <% } %>
         </div>
     </div>
 </main>
