@@ -12,7 +12,7 @@ const whiskeyReviewSchema = new mongoose.Schema({
     rating: {
         type: Number,
         required: true,
-        min: 1,
+        min: 0,
         max: 5
     },
     review_text: {
@@ -25,22 +25,22 @@ const whiskeyReviewSchema = new mongoose.Schema({
     },
     body: {
         type: Number,
-        min: 1,
+        min: 0,
         max: 5
     },
     richness: {
         type: Number,
-        min: 1,
+        min: 0,
         max: 5
     },
     smoke: {
         type: Number,
-        min: 1,
+        min: 0,
         max: 5
     },
     sweetness: {
         type: Number,
-        min: 1,
+        min: 0,
         max: 5
     }
 });

@@ -1956,6 +1956,8 @@ body {
     display: flex;
     flex-direction: column;
     gap: 30px;
+    width: 100%;
+    min-width: 0; /* 플렉스 아이템이 줄어들 수 있도록 */
 }
 
 .whiskey-title {
@@ -1967,16 +1969,19 @@ body {
 }
 
 .info-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 20px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
 }
 
 .info-item {
+    flex: 1 1 calc(50% - 6px); /* 2개씩 배치, gap 고려 */
+    min-width: 100px;
+    max-width: calc(50% - 6px);
     display: flex;
     flex-direction: column;
     gap: 8px;
-    padding: 16px;
+    padding: 12px;
     background: #f8f9fa;
     border-radius: 8px;
 }

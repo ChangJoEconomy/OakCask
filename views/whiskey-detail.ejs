@@ -146,27 +146,27 @@
                 <div class="rating-grid">
                     <div class="rating-item">
                         <label>총 평점</label>
-                        <input type="range" id="overall-rating" min="1" max="5" value="3">
+                        <input type="range" id="overall-rating" min="0" max="5" value="3">
                         <span id="overall-rating-value">3</span>
                     </div>
                     <div class="rating-item">
                         <label>바디감</label>
-                        <input type="range" id="body-rating" min="1" max="5" value="3">
+                        <input type="range" id="body-rating" min="0" max="5" value="3">
                         <span id="body-rating-value">3</span>
                     </div>
                     <div class="rating-item">
                         <label>풍미</label>
-                        <input type="range" id="richness-rating" min="1" max="5" value="3">
+                        <input type="range" id="richness-rating" min="0" max="5" value="3">
                         <span id="richness-rating-value">3</span>
                     </div>
                     <div class="rating-item">
                         <label>스모키함</label>
-                        <input type="range" id="smokiness-rating" min="1" max="5" value="3">
+                        <input type="range" id="smokiness-rating" min="0" max="5" value="3">
                         <span id="smokiness-rating-value">3</span>
                     </div>
                     <div class="rating-item">
                         <label>단맛</label>
-                        <input type="range" id="sweetness-rating" min="1" max="5" value="3">
+                        <input type="range" id="sweetness-rating" min="0" max="5" value="3">
                         <span id="sweetness-rating-value">3</span>
                     </div>
                 </div>
@@ -187,6 +187,21 @@
 <script>
 // 평가 모달 열기
 async function openReviewModal(whiskeyId) {
+    // 로그인 상태 확인을 위해 기존 리뷰 조회 API 호출
+    try {
+        const checkResponse = await fetch(`/api/review/${whiskeyId}`);
+        if (checkResponse.status === 401) {
+            alert('로그인이 필요합니다.');
+            window.location.href = '/login';
+            return;
+        }
+    } catch (error) {
+        // 네트워크 오류 등의 경우에도 로그인 페이지로 이동
+        alert('로그인이 필요합니다.');
+        window.location.href = '/login';
+        return;
+    }
+    
     const modal = document.getElementById('whiskey-modal');
     const title = document.getElementById('modal-title');
     
@@ -194,7 +209,7 @@ async function openReviewModal(whiskeyId) {
     modal.classList.remove('hidden');
     modal.dataset.whiskeyId = whiskeyId;
     
-    // 기존 리뷰가 있는지 확인
+    // 기존 리뷰가 있는지 확인 (이미 위에서 로그인 체크를 위해 호출했으므로 다시 호출)
     try {
         const response = await fetch(`/api/review/${whiskeyId}`);
         if (response.ok) {
@@ -211,9 +226,12 @@ async function openReviewModal(whiskeyId) {
             document.getElementById('sweetness-rating').value = review.sweetness || 3;
             document.getElementById('sweetness-rating-value').textContent = review.sweetness || 3;
             document.getElementById('review-text').value = review.review_text || '';
+        } else if (response.status === 404) {
+            // 기존 리뷰가 없는 경우 - 기본값 유지
+            console.log('기존 리뷰 없음');
         }
     } catch (error) {
-        console.log('기존 리뷰 없음');
+        console.log('기존 리뷰 로딩 실패:', error);
     }
 }
 

@@ -130,7 +130,8 @@ const getWhiskeyDetailPage = asyncHandler(async (req, res) => {
         title: `${whiskey.name} - Oktong`,
         currentUser: req.user ? req.user.nickname : 'guest',
         currentPage: 'whiskey-detail',
-        whiskey: whiskey
+        whiskey: whiskey,
+        user: req.user // 사용자 정보 추가
     });
 });
 
