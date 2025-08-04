@@ -112,6 +112,28 @@ const getHomePage = asyncHandler(async (req, res) => {
     });
 });
 
+// @desc get whiskey detail page
+// @route GET /whiskey/:id
+const getWhiskeyDetailPage = asyncHandler(async (req, res) => {
+    const whiskey = await Whiskey.findOne({ whiskey_id: req.params.id });
+    
+    if (!whiskey) {
+        return res.status(404).render('error', {
+            title: '위스키를 찾을 수 없습니다 - Oktong',
+            currentUser: req.user ? req.user.nickname : 'guest',
+            currentPage: 'error',
+            errorMessage: '요청하신 위스키를 찾을 수 없습니다.'
+        });
+    }
+    
+    res.render('whiskey-detail', {
+        title: `${whiskey.name} - Oktong`,
+        currentUser: req.user ? req.user.nickname : 'guest',
+        currentPage: 'whiskey-detail',
+        whiskey: whiskey
+    });
+});
+
 // @desc get whiskey detail
 // @route GET /api/whiskey/:id
 const getWhiskeyDetail = asyncHandler(async (req, res) => {
@@ -126,5 +148,6 @@ const getWhiskeyDetail = asyncHandler(async (req, res) => {
 
 module.exports = {
     getHomePage,
-    getWhiskeyDetail
+    getWhiskeyDetail,
+    getWhiskeyDetailPage
 };

@@ -1,0 +1,300 @@
+<!-- 위스키 상세 페이지 -->
+<main class="main-container">
+    <div class="content-wrapper">
+        <!-- 뒤로가기 버튼 -->
+        <div class="page-header">
+            <button onclick="history.back()" class="back-btn">
+                <i class="fas fa-arrow-left"></i> 뒤로가기
+            </button>
+            <h2 class="page-title">
+                <i class="fas fa-glass-whiskey"></i> 위스키 상세정보
+            </h2>
+        </div>
+
+        <div class="whiskey-detail-container">
+            <!-- 위스키 기본 정보 -->
+            <div class="whiskey-detail-card">
+                <div class="whiskey-image-section">
+                    <div class="whiskey-image-large">
+                        <% if (whiskey.image_path) { %>
+                            <img src="<%= whiskey.image_path %>" alt="<%= whiskey.name %>" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+                            <div class="whiskey-placeholder-large" style="display:none;">🥃</div>
+                        <% } else { %>
+                            <div class="whiskey-placeholder-large">🥃</div>
+                        <% } %>
+                    </div>
+                </div>
+
+                <div class="whiskey-info-section">
+                    <h1 class="whiskey-title"><%= whiskey.name %></h1>
+                    
+                    <div class="whiskey-basic-info">
+                        <div class="info-grid">
+                            <div class="info-item">
+                                <span class="info-label">
+                                    <i class="fas fa-glass-whiskey"></i> 타입
+                                </span>
+                                <span class="info-value"><%= whiskey.type || '미상' %></span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">
+                                    <i class="fas fa-globe"></i> 원산지
+                                </span>
+                                <span class="info-value"><%= whiskey.origin || '미상' %></span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">
+                                    <i class="fas fa-won-sign"></i> 가격
+                                </span>
+                                <span class="info-value price"><%= whiskey.price.toLocaleString() %>원</span>
+                            </div>
+                            <% if (whiskey.age_years) { %>
+                            <div class="info-item">
+                                <span class="info-label">
+                                    <i class="fas fa-hourglass-half"></i> 숙성연수
+                                </span>
+                                <span class="info-value"><%= whiskey.age_years %>년</span>
+                            </div>
+                            <% } %>
+                            <% if (whiskey.alcohol) { %>
+                            <div class="info-item">
+                                <span class="info-label">
+                                    <i class="fas fa-percentage"></i> 알코올 도수
+                                </span>
+                                <span class="info-value"><%= whiskey.alcohol %>%</span>
+                            </div>
+                            <% } %>
+                        </div>
+                    </div>
+
+                    <!-- 맛 프로파일 -->
+                    <div class="flavor-profile-section">
+                        <h3><i class="fas fa-palette"></i> 맛 프로파일</h3>
+                        <div class="flavor-profile-grid">
+                            <div class="flavor-item">
+                                <span class="flavor-label">바디감</span>
+                                <div class="flavor-bar">
+                                    <div class="flavor-fill" style="width: <%= (whiskey.body || 0) * 20 %>%"></div>
+                                </div>
+                                <span class="flavor-value"><%= whiskey.body || 0 %>/5</span>
+                            </div>
+                            <div class="flavor-item">
+                                <span class="flavor-label">풍미</span>
+                                <div class="flavor-bar">
+                                    <div class="flavor-fill" style="width: <%= (whiskey.richness || 0) * 20 %>%"></div>
+                                </div>
+                                <span class="flavor-value"><%= whiskey.richness || 0 %>/5</span>
+                            </div>
+                            <div class="flavor-item">
+                                <span class="flavor-label">스모키</span>
+                                <div class="flavor-bar">
+                                    <div class="flavor-fill" style="width: <%= (whiskey.smoke || 0) * 20 %>%"></div>
+                                </div>
+                                <span class="flavor-value"><%= whiskey.smoke || 0 %>/5</span>
+                            </div>
+                            <div class="flavor-item">
+                                <span class="flavor-label">단맛</span>
+                                <div class="flavor-bar">
+                                    <div class="flavor-fill" style="width: <%= (whiskey.sweetness || 0) * 20 %>%"></div>
+                                </div>
+                                <span class="flavor-value"><%= whiskey.sweetness || 0 %>/5</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 상세 설명 -->
+                    <% if (whiskey.description) { %>
+                    <div class="description-section">
+                        <h3><i class="fas fa-file-alt"></i> 설명</h3>
+                        <p class="description-text"><%= whiskey.description %></p>
+                    </div>
+                    <% } %>
+
+                    <!-- 액션 버튼들 -->
+                    <div class="action-buttons">
+                        <button class="btn btn-primary" onclick="openReviewModal('<%= whiskey.whiskey_id %>')">
+                            <i class="fas fa-star"></i> 평가하기
+                        </button>
+                        <button class="btn btn-secondary" onclick="addToWishlist('<%= whiskey.whiskey_id %>')">
+                            <i class="fas fa-heart"></i> 위시리스트
+                        </button>
+                        <button class="btn btn-info" onclick="shareWhiskey('<%= whiskey.whiskey_id %>')">
+                            <i class="fas fa-share"></i> 공유하기
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<!-- 평가 모달 (기존 모달 재사용) -->
+<div id="whiskey-modal" class="modal hidden">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3 id="modal-title">위스키 평가</h3>
+            <button id="close-modal-btn" class="close-btn">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="modal-body">
+            <div id="modal-whiskey-info"></div>
+            
+            <div class="review-section">
+                <h4><i class="fas fa-star"></i> 평가</h4>
+                
+                <div class="rating-grid">
+                    <div class="rating-item">
+                        <label>총 평점</label>
+                        <input type="range" id="overall-rating" min="1" max="5" value="3">
+                        <span id="overall-rating-value">3</span>
+                    </div>
+                    <div class="rating-item">
+                        <label>바디감</label>
+                        <input type="range" id="body-rating" min="1" max="5" value="3">
+                        <span id="body-rating-value">3</span>
+                    </div>
+                    <div class="rating-item">
+                        <label>풍미</label>
+                        <input type="range" id="richness-rating" min="1" max="5" value="3">
+                        <span id="richness-rating-value">3</span>
+                    </div>
+                    <div class="rating-item">
+                        <label>스모키함</label>
+                        <input type="range" id="smokiness-rating" min="1" max="5" value="3">
+                        <span id="smokiness-rating-value">3</span>
+                    </div>
+                    <div class="rating-item">
+                        <label>단맛</label>
+                        <input type="range" id="sweetness-rating" min="1" max="5" value="3">
+                        <span id="sweetness-rating-value">3</span>
+                    </div>
+                </div>
+                
+                <div class="review-text-section">
+                    <label for="review-text">리뷰 작성</label>
+                    <textarea id="review-text" placeholder="이 위스키에 대한 당신의 생각을 들려주세요..."></textarea>
+                </div>
+                
+                <button id="submit-review-btn" class="btn btn-primary">
+                    <i class="fas fa-check"></i> 평가 저장
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// 평가 모달 열기
+async function openReviewModal(whiskeyId) {
+    const modal = document.getElementById('whiskey-modal');
+    const title = document.getElementById('modal-title');
+    
+    title.textContent = '<%= whiskey.name %> 평가';
+    modal.classList.remove('hidden');
+    modal.dataset.whiskeyId = whiskeyId;
+    
+    // 기존 리뷰가 있는지 확인
+    try {
+        const response = await fetch(`/api/review/${whiskeyId}`);
+        if (response.ok) {
+            const review = await response.json();
+            // 기존 리뷰 데이터로 폼 채우기
+            document.getElementById('overall-rating').value = review.rating;
+            document.getElementById('overall-rating-value').textContent = review.rating;
+            document.getElementById('body-rating').value = review.body || 3;
+            document.getElementById('body-rating-value').textContent = review.body || 3;
+            document.getElementById('richness-rating').value = review.richness || 3;
+            document.getElementById('richness-rating-value').textContent = review.richness || 3;
+            document.getElementById('smokiness-rating').value = review.smoke || 3;
+            document.getElementById('smokiness-rating-value').textContent = review.smoke || 3;
+            document.getElementById('sweetness-rating').value = review.sweetness || 3;
+            document.getElementById('sweetness-rating-value').textContent = review.sweetness || 3;
+            document.getElementById('review-text').value = review.review_text || '';
+        }
+    } catch (error) {
+        console.log('기존 리뷰 없음');
+    }
+}
+
+// 위시리스트 추가
+function addToWishlist(whiskeyId) {
+    // TODO: 위시리스트 기능 구현
+    alert('위시리스트 기능은 준비 중입니다.');
+}
+
+// 공유하기
+function shareWhiskey(whiskeyId) {
+    const url = window.location.href;
+    navigator.clipboard.writeText(url).then(() => {
+        alert('링크가 클립보드에 복사되었습니다!');
+    }).catch(() => {
+        alert('링크 복사에 실패했습니다.');
+    });
+}
+
+// 리뷰 제출
+async function submitReview() {
+    const modal = document.getElementById('whiskey-modal');
+    const whiskeyId = modal.dataset.whiskeyId;
+    
+    const reviewData = {
+        whiskey_id: whiskeyId,
+        rating: parseInt(document.getElementById('overall-rating').value),
+        body: parseInt(document.getElementById('body-rating').value),
+        richness: parseInt(document.getElementById('richness-rating').value),
+        smoke: parseInt(document.getElementById('smokiness-rating').value),
+        sweetness: parseInt(document.getElementById('sweetness-rating').value),
+        review_text: document.getElementById('review-text').value.trim()
+    };
+    
+    try {
+        const response = await fetch('/api/review', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(reviewData)
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            alert(result.message);
+            modal.classList.add('hidden');
+            // 페이지 새로고침하여 업데이트된 정보 표시
+            location.reload();
+        } else {
+            alert('리뷰 저장에 실패했습니다: ' + result.error);
+        }
+    } catch (error) {
+        console.error('리뷰 저장 오류:', error);
+        alert('리뷰 저장 중 오류가 발생했습니다.');
+    }
+}
+
+// 모달 닫기
+document.getElementById('close-modal-btn').addEventListener('click', () => {
+    document.getElementById('whiskey-modal').classList.add('hidden');
+});
+
+// 리뷰 제출 버튼 이벤트
+document.getElementById('submit-review-btn').addEventListener('click', submitReview);
+
+// 모달 외부 클릭 시 닫기
+document.getElementById('whiskey-modal').addEventListener('click', (e) => {
+    if (e.target.id === 'whiskey-modal') {
+        document.getElementById('whiskey-modal').classList.add('hidden');
+    }
+});
+
+// 범위 슬라이더 값 업데이트
+document.querySelectorAll('input[type="range"]').forEach(input => {
+    input.addEventListener('input', (e) => {
+        const valueSpan = document.getElementById(e.target.id + '-value');
+        if (valueSpan) {
+            valueSpan.textContent = e.target.value;
+        }
+    });
+});
+</script>

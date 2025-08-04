@@ -1905,3 +1905,510 @@ body {
         padding: 6px 8px;
     }
 }
+
+/* 위스키 상세 페이지 스타일 */
+.whiskey-detail-container {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.whiskey-detail-card {
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+    display: grid;
+    grid-template-columns: 1fr 2fr;
+    gap: 40px;
+    padding: 40px;
+}
+
+.whiskey-image-section {
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+}
+
+.whiskey-image-large {
+    width: 300px;
+    height: 400px;
+    background: #f8f9fa;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+
+.whiskey-image-large img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.whiskey-placeholder-large {
+    font-size: 120px;
+    color: #6b7280;
+}
+
+.whiskey-info-section {
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+}
+
+.whiskey-title {
+    font-size: 36px;
+    font-weight: 700;
+    color: #1f2937;
+    margin: 0;
+    line-height: 1.2;
+}
+
+.info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px;
+}
+
+.info-item {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 16px;
+    background: #f8f9fa;
+    border-radius: 8px;
+}
+
+.info-label {
+    font-size: 14px;
+    font-weight: 600;
+    color: #6b7280;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.info-value {
+    font-size: 18px;
+    font-weight: 600;
+    color: #1f2937;
+}
+
+.info-value.price {
+    color: #059669;
+    font-size: 20px;
+}
+
+.flavor-profile-section {
+    background: #f8f9fa;
+    padding: 24px;
+    border-radius: 12px;
+}
+
+.flavor-profile-section h3 {
+    margin: 0 0 20px 0;
+    font-size: 20px;
+    color: #1f2937;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.flavor-profile-grid {
+    display: grid;
+    gap: 16px;
+}
+
+.flavor-item {
+    display: grid;
+    grid-template-columns: 80px 1fr 50px;
+    align-items: center;
+    gap: 16px;
+}
+
+.flavor-label {
+    font-size: 14px;
+    font-weight: 600;
+    color: #374151;
+}
+
+.flavor-bar {
+    height: 8px;
+    background: #e5e7eb;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.flavor-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #3b82f6, #1d4ed8);
+    border-radius: 4px;
+    transition: width 0.3s ease;
+}
+
+.flavor-value {
+    font-size: 14px;
+    font-weight: 600;
+    color: #6b7280;
+    text-align: center;
+}
+
+.description-section {
+    background: #f8f9fa;
+    padding: 24px;
+    border-radius: 12px;
+}
+
+.description-section h3 {
+    margin: 0 0 16px 0;
+    font-size: 20px;
+    color: #1f2937;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.description-text {
+    font-size: 16px;
+    line-height: 1.6;
+    color: #4b5563;
+    margin: 0;
+}
+
+.action-buttons {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.btn {
+    padding: 12px 24px;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    text-decoration: none;
+}
+
+.btn-primary {
+    background: #3b82f6;
+    color: white;
+}
+
+.btn-primary:hover {
+    background: #2563eb;
+    transform: translateY(-1px);
+}
+
+.btn-secondary {
+    background: #6b7280;
+    color: white;
+}
+
+.btn-secondary:hover {
+    background: #4b5563;
+    transform: translateY(-1px);
+}
+
+.btn-info {
+    background: #06b6d4;
+    color: white;
+}
+
+.btn-info:hover {
+    background: #0891b2;
+    transform: translateY(-1px);
+}
+
+.back-btn {
+    background: #f3f4f6;
+    border: none;
+    padding: 12px 20px;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 600;
+    color: #374151;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.back-btn:hover {
+    background: #e5e7eb;
+    transform: translateY(-1px);
+}
+
+/* 반응형 디자인 */
+@media (max-width: 768px) {
+    .whiskey-detail-card {
+        grid-template-columns: 1fr;
+        gap: 30px;
+        padding: 20px;
+    }
+    
+    .whiskey-image-large {
+        width: 250px;
+        height: 300px;
+    }
+    
+    .whiskey-title {
+        font-size: 28px;
+    }
+    
+    .info-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .action-buttons {
+        flex-direction: column;
+    }
+    
+    .flavor-item {
+        grid-template-columns: 70px 1fr 40px;
+        gap: 12px;
+    }
+}
+
+/* 평가한 위스키 페이지 스타일 */
+.evaluated-whiskey-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(450px, 1fr));
+    gap: 24px;
+    margin-top: 20px;
+}
+
+.evaluated-whiskey-card {
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.evaluated-whiskey-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+}
+
+.whiskey-info-section {
+    padding: 20px;
+    display: flex;
+    gap: 16px;
+    align-items: flex-start;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.whiskey-info-section .whiskey-image {
+    width: 80px;
+    height: 80px;
+    background: #f3f4f6;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 32px;
+    border-radius: 8px;
+    flex-shrink: 0;
+}
+
+.whiskey-info-section .whiskey-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 8px;
+}
+
+.whiskey-basic-info {
+    flex: 1;
+}
+
+.whiskey-name a {
+    color: #1f2937;
+    text-decoration: none;
+    font-size: 18px;
+    font-weight: 600;
+    margin: 0 0 8px 0;
+    display: block;
+    transition: color 0.2s ease;
+}
+
+.whiskey-name a:hover {
+    color: #3b82f6;
+}
+
+.whiskey-details {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.whiskey-details span {
+    font-size: 14px;
+    color: #6b7280;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.whiskey-details .whiskey-price {
+    color: #059669;
+    font-weight: 600;
+}
+
+.review-section {
+    padding: 20px;
+}
+
+.review-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+}
+
+.overall-rating {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.rating-label {
+    font-size: 14px;
+    font-weight: 600;
+    color: #374151;
+}
+
+.rating-stars {
+    display: flex;
+    gap: 2px;
+}
+
+.rating-stars i {
+    color: #d1d5db;
+    font-size: 16px;
+}
+
+.rating-stars i.active {
+    color: #fbbf24;
+}
+
+.rating-number {
+    font-size: 16px;
+    font-weight: 700;
+    color: #1f2937;
+}
+
+.review-date {
+    font-size: 14px;
+    color: #6b7280;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.detailed-ratings {
+    margin-bottom: 16px;
+}
+
+.detailed-ratings .rating-item {
+    display: grid;
+    grid-template-columns: 60px 1fr 30px;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 8px;
+}
+
+.rating-bar {
+    height: 6px;
+    background: #e5e7eb;
+    border-radius: 3px;
+    overflow: hidden;
+}
+
+.rating-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #3b82f6, #1d4ed8);
+    border-radius: 3px;
+    transition: width 0.3s ease;
+}
+
+.rating-value {
+    font-size: 12px;
+    font-weight: 600;
+    color: #6b7280;
+    text-align: center;
+}
+
+.review-text {
+    background: #f8f9fa;
+    padding: 12px;
+    border-radius: 8px;
+    margin-bottom: 16px;
+}
+
+.review-text p {
+    margin: 0;
+    font-style: italic;
+    color: #4b5563;
+    line-height: 1.5;
+}
+
+.review-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.btn-small {
+    padding: 6px 12px;
+    font-size: 14px;
+}
+
+.btn-danger {
+    background: #ef4444;
+    color: white;
+}
+
+.btn-danger:hover {
+    background: #dc2626;
+    transform: translateY(-1px);
+}
+
+/* 반응형 */
+@media (max-width: 768px) {
+    .evaluated-whiskey-grid {
+        grid-template-columns: 1fr;
+        gap: 16px;
+    }
+    
+    .whiskey-info-section {
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .whiskey-info-section .whiskey-image {
+        align-self: center;
+    }
+    
+    .review-header {
+        flex-direction: column;
+        gap: 8px;
+        align-items: flex-start;
+    }
+    
+    .detailed-ratings .rating-item {
+        grid-template-columns: 50px 1fr 25px;
+        gap: 8px;
+    }
+    
+    .review-actions {
+        flex-direction: column;
+    }
+}

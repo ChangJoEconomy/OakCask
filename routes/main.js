@@ -3,6 +3,7 @@ const router = express.Router();
 const {
     getHomePage,
     getWhiskeyDetail,
+    getWhiskeyDetailPage,
 } = require('../controllers/index');
 const {
     getPreferencesPage,
@@ -25,6 +26,11 @@ const {
     getRegisterPage,
     registerUser
 } = require("../controllers/register");
+const {
+    createOrUpdateReview,
+    getUserReview,
+    deleteReview
+} = require("../controllers/reviewController");
 const {
     checkLogin,
     redirectIfNotLoggedIn
@@ -56,8 +62,20 @@ router.route('/register')
 router.route('/logout')
     .get(logoutUser);
 
+// 위스키 상세 페이지
+router.route('/whiskey/:id')
+    .get(checkLogin, getWhiskeyDetailPage);
+
 // API 라우트
 router.route('/api/whiskey/:id')
     .get(getWhiskeyDetail);
+
+// 리뷰 API 라우트
+router.route('/api/review')
+    .post(checkLogin, createOrUpdateReview);
+
+router.route('/api/review/:whiskey_id')
+    .get(checkLogin, getUserReview)
+    .delete(checkLogin, deleteReview);
 
 module.exports = router;

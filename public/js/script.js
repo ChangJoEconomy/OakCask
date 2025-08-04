@@ -684,96 +684,9 @@ class AuthManager {
     }
 }
 
-// 위스키 상세 정보 모달 열기 (DB에서 데이터 가져오기)
-async function openWhiskeyDetail(whiskeyId) {
-    try {
-        const response = await fetch(`/api/whiskey/${whiskeyId}`);
-        if (!response.ok) {
-            throw new Error('위스키 정보를 가져올 수 없습니다.');
-        }
-        
-        const whiskey = await response.json();
-        
-        const modal = document.getElementById('whiskey-modal');
-        const title = document.getElementById('modal-title');
-        const info = document.getElementById('modal-whiskey-info');
-
-        if (!modal || !title || !info) {
-            console.error('모달 요소를 찾을 수 없습니다.');
-            return;
-        }
-
-        title.textContent = whiskey.name;
-        
-        info.innerHTML = `
-            <div class="whiskey-detail-card">
-                <div class="whiskey-image-large">
-                    ${whiskey.image_path ? 
-                        `<img src="${whiskey.image_path}" alt="${whiskey.name}" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
-                         <div class="whiskey-placeholder-large" style="display:none;">🥃</div>` : 
-                        `<div class="whiskey-placeholder-large">🥃</div>`
-                    }
-                </div>
-                <div class="whiskey-detail-info">
-                    <h3>${whiskey.name}</h3>
-                    <div class="detail-grid">
-                        <div class="detail-item">
-                            <strong>타입:</strong> ${whiskey.type || '미상'}
-                        </div>
-                        <div class="detail-item">
-                            <strong>원산지:</strong> ${whiskey.origin || '미상'}
-                        </div>
-                        <div class="detail-item">
-                            <strong>가격:</strong> ${whiskey.price.toLocaleString()}원
-                        </div>
-                        ${whiskey.age_years ? `<div class="detail-item"><strong>숙성 연수:</strong> ${whiskey.age_years}년</div>` : ''}
-                        ${whiskey.alcohol ? `<div class="detail-item"><strong>알코올 도수:</strong> ${whiskey.alcohol}%</div>` : ''}
-                    </div>
-                    
-                    <div class="flavor-profile-section">
-                        <h4><i class="fas fa-palette"></i> 맛 프로파일</h4>
-                        <div class="flavor-profile-grid">
-                            <div class="flavor-item">
-                                <span class="flavor-label">바디감</span>
-                                <div class="flavor-bar">
-                                    <div class="flavor-fill" style="width: ${(whiskey.body || 0) * 20}%"></div>
-                                </div>
-                                <span class="flavor-value">${whiskey.body || 0}/5</span>
-                            </div>
-                            <div class="flavor-item">
-                                <span class="flavor-label">풍미</span>
-                                <div class="flavor-bar">
-                                    <div class="flavor-fill" style="width: ${(whiskey.richness || 0) * 20}%"></div>
-                                </div>
-                                <span class="flavor-value">${whiskey.richness || 0}/5</span>
-                            </div>
-                            <div class="flavor-item">
-                                <span class="flavor-label">스모키</span>
-                                <div class="flavor-bar">
-                                    <div class="flavor-fill" style="width: ${(whiskey.smoke || 0) * 20}%"></div>
-                                </div>
-                                <span class="flavor-value">${whiskey.smoke || 0}/5</span>
-                            </div>
-                            <div class="flavor-item">
-                                <span class="flavor-label">단맛</span>
-                                <div class="flavor-bar">
-                                    <div class="flavor-fill" style="width: ${(whiskey.sweetness || 0) * 20}%"></div>
-                                </div>
-                                <span class="flavor-value">${whiskey.sweetness || 0}/5</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        `;
-
-        modal.classList.remove('hidden');
-        modal.dataset.whiskeyId = whiskey.whiskey_id;
-        
-    } catch (error) {
-        console.error('위스키 상세 정보 로드 중 오류:', error);
-        alert('위스키 정보를 불러오는 중 오류가 발생했습니다.');
-    }
+// 위스키 상세 정보 페이지로 이동
+function openWhiskeyDetail(whiskeyId) {
+    window.location.href = `/whiskey/${whiskeyId}`;
 }
 
 // 앱 초기화
