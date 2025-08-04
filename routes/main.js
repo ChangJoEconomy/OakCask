@@ -32,6 +32,12 @@ const {
     deleteReview
 } = require("../controllers/reviewController");
 const {
+    addRecentView,
+    getRecentViews,
+    removeRecentView,
+    clearRecentViews
+} = require("../controllers/recentViewController");
+const {
     checkLogin,
     redirectIfNotLoggedIn
 } = require('../middlewares/checkLogin');
@@ -77,5 +83,14 @@ router.route('/api/review')
 router.route('/api/review/:whiskey_id')
     .get(checkLogin, getUserReview)
     .delete(checkLogin, deleteReview);
+
+// 최근 본 위스키 API 라우트
+router.route('/api/recent-view')
+    .get(checkLogin, getRecentViews)
+    .post(checkLogin, addRecentView)
+    .delete(checkLogin, clearRecentViews);
+
+router.route('/api/recent-view/:whiskey_id')
+    .delete(checkLogin, removeRecentView);
 
 module.exports = router;

@@ -9,16 +9,180 @@
         </div>
 
         <div class="content-card">
-            <div id="recent-container" class="whiskey-container">
-                <div class="empty-state">
-                    <i class="fas fa-eye"></i>
-                    <p>최근 조회한 위스키가 없습니다.</p>
-                    <span>위스키를 둘러보고 관심 있는 제품을 확인해보세요!</span>
-                    <a href="/all-whiskey" class="primary-btn">
-                        전체 위스키 목록 보기
-                    </a>
-                </div>
+            <div class="whiskey-container">
+                <% if (recentWhiskeys && recentWhiskeys.length > 0) { %>
+                    <div class="whiskey-grid">
+                        <% recentWhiskeys.forEach(recent => { %>
+                            <div class="whiskey-card">
+                                <div class="whiskey-image">
+                                    <% if (recent.whiskey.image_path) { %>
+                                        <img src="<%= recent.whiskey.image_path %>" alt="<%= recent.whiskey.name %>" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+                                        <div class="whiskey-placeholder" style="display:none;">🥃</div>
+                                    <% } else { %>
+                                        <div class="whiskey-placeholder">🥃</div>
+                                    <% } %>
+                                </div>
+                                
+                                <div class="whiskey-info">
+                                    <h3 class="whiskey-name">
+                                        <a href="/whiskey/<%= recent.whiskey.whiskey_id %>">
+                                            <%= recent.whiskey.name %>
+                                        </a>
+                                    </h3>
+                                    <div class="whiskey-details">
+                                        <span class="whiskey-type">
+                                            <i class="fas fa-glass-whiskey"></i>
+                                            <%= recent.whiskey.type || '-' %>
+                                        </span>
+                                        <span class="whiskey-origin">
+                                            <i class="fas fa-globe"></i>
+                                            <%= recent.whiskey.origin || '-' %>
+                                        </span>
+                                        <span class="whiskey-price">
+                                            <i class="fas fa-won-sign"></i>
+                                            <%= recent.whiskey.price.toLocaleString() %>원
+                                        </span>
+                                    </div>
+                                    
+                                    <!-- 조회 시간 표시 -->
+                                    <div class="view-info">
+                                        <small class="view-date">
+                                            <i class="fas fa-clock"></i>
+                                            <%= new Date(recent.view_date).toLocaleDateString('ko-KR', { 
+                                                year: 'numeric', 
+                                                month: 'short', 
+                                                day: 'numeric',
+                                                hour: '2-digit',
+                                                minute: '2-digit'
+                                            }) %>
+                                        </small>
+                                    </div>
+                                    
+                                    <!-- 액션 버튼 -->
+                                    <div class="whiskey-actions">
+                                        <a href="/whiskey/<%= recent.whiskey.whiskey_id %>" class="btn btn-primary btn-small">
+                                            <i class="fas fa-eye"></i> 상세보기
+                                        </a>
+                                        <button class="btn btn-danger btn-small" onclick="removeFromRecent('<%= recent.whiskey_id %>')">
+                                            <i class="fas fa-times"></i> 제거
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        <% }) %>
+                    </div>
+
+                    <!-- 페이지네이션 -->
+                    <% if (pagination && pagination.totalPages > 1) { %>
+                        <div class="pagination-wrapper">
+                            <div class="pagination-info">
+                                총 <%= pagination.totalViews %>개의 위스키 중 
+                                <%= ((pagination.currentPage - 1) * 12) + 1 %>~<%= Math.min(pagination.currentPage * 12, pagination.totalViews) %>개 표시
+                            </div>
+                            <div class="pagination">
+                                <% if (pagination.hasPrev) { %>
+                                    <a href="?page=1" class="pagination-btn first">
+                                        <i class="fas fa-angle-double-left"></i>
+                                    </a>
+                                    <a href="?page=<%= pagination.prevPage %>" class="pagination-btn prev">
+                                        <i class="fas fa-angle-left"></i>
+                                    </a>
+                                <% } %>
+                                
+                                <% 
+                                let startPage = Math.max(1, pagination.currentPage - 2);
+                                let endPage = Math.min(pagination.totalPages, pagination.currentPage + 2);
+                                %>
+                                
+                                <% for (let i = startPage; i <= endPage; i++) { %>
+                                    <% if (i === pagination.currentPage) { %>
+                                        <span class="pagination-btn current"><%= i %></span>
+                                    <% } else { %>
+                                        <a href="?page=<%= i %>" class="pagination-btn"><%= i %></a>
+                                    <% } %>
+                                <% } %>
+                                
+                                <% if (pagination.hasNext) { %>
+                                    <a href="?page=<%= pagination.nextPage %>" class="pagination-btn next">
+                                        <i class="fas fa-angle-right"></i>
+                                    </a>
+                                    <a href="?page=<%= pagination.totalPages %>" class="pagination-btn last">
+                                        <i class="fas fa-angle-double-right"></i>
+                                    </a>
+                                <% } %>
+                            </div>
+                        </div>
+                    <% } %>
+                    
+                    <!-- 전체 삭제 버튼 -->
+                    <div class="action-buttons">
+                        <button class="btn btn-outline-danger" onclick="clearAllRecent()">
+                            <i class="fas fa-trash"></i> 최근 본 기록 전체 삭제
+                        </button>
+                    </div>
+                <% } else { %>
+                    <div class="empty-state">
+                        <i class="fas fa-eye"></i>
+                        <p>최근 조회한 위스키가 없습니다.</p>
+                        <span>위스키를 둘러보고 관심 있는 제품을 확인해보세요!</span>
+                        <a href="/" class="primary-btn">
+                            <i class="fas fa-search"></i> 전체 위스키 목록 보기
+                        </a>
+                    </div>
+                <% } %>
             </div>
         </div>
     </div>
 </main>
+
+<script>
+// 최근 본 위스키에서 개별 제거
+async function removeFromRecent(whiskeyId) {
+    if (!confirm('이 위스키를 최근 본 목록에서 제거하시겠습니까?')) {
+        return;
+    }
+    
+    try {
+        const response = await fetch(`/api/recent-view/${whiskeyId}`, {
+            method: 'DELETE'
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            alert('최근 본 목록에서 제거되었습니다.');
+            location.reload();
+        } else {
+            alert('제거에 실패했습니다.');
+        }
+    } catch (error) {
+        console.error('제거 오류:', error);
+        alert('제거 중 오류가 발생했습니다.');
+    }
+}
+
+// 최근 본 위스키 전체 삭제
+async function clearAllRecent() {
+    if (!confirm('모든 최근 본 기록을 삭제하시겠습니까?')) {
+        return;
+    }
+    
+    try {
+        const response = await fetch('/api/recent-view', {
+            method: 'DELETE'
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            alert('모든 최근 본 기록이 삭제되었습니다.');
+            location.reload();
+        } else {
+            alert('삭제에 실패했습니다.');
+        }
+    } catch (error) {
+        console.error('삭제 오류:', error);
+        alert('삭제 중 오류가 발생했습니다.');
+    }
+}
+</script>

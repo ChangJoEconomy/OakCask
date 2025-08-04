@@ -315,4 +315,24 @@ document.querySelectorAll('input[type="range"]').forEach(input => {
         }
     });
 });
+
+// 페이지 로드 시 최근 본 위스키에 추가
+async function addToRecentView() {
+    const whiskeyId = '<%= whiskey.whiskey_id %>';
+    
+    try {
+        await fetch('/api/recent-view', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ whiskey_id: whiskeyId })
+        });
+    } catch (error) {
+        console.log('최근 본 위스키 추가 실패:', error);
+    }
+}
+
+// 페이지 로드 시 실행
+document.addEventListener('DOMContentLoaded', addToRecentView);
 </script>

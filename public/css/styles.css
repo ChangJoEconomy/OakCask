@@ -2417,3 +2417,22 @@ body {
         flex-direction: column;
     }
 }
+
+/* 최근 본 위스키 페이지 스타일 */
+.view-info {
+    margin: 8px 0;
+    padding: 8px 0;
+    border-top: 1px solid #e5e7eb;
+}
+
+.view-date {
+    color: #6b7280;
+    font-size: 12px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.view-date i {
+    color: #9ca3af;
+}
