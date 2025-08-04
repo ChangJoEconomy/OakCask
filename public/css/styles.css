@@ -2436,3 +2436,581 @@ body {
 .view-date i {
     color: #9ca3af;
 }
+
+/* AI 추천 관련 스타일 추가 */
+.ai-analysis, .ai-summary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 20px;
+    border-radius: 12px;
+    margin-bottom: 20px;
+}
+
+.analysis-header, .summary-header {
+    font-weight: bold;
+    font-size: 1.1em;
+    margin-bottom: 10px;
+}
+
+.analysis-header i, .summary-header i {
+    margin-right: 8px;
+}
+
+.whiskey-card.ai-recommended {
+    border: 2px solid #667eea;
+    position: relative;
+}
+
+.ai-badge {
+    position: absolute;
+    top: -10px;
+    right: -10px;
+    background: linear-gradient(45deg, #667eea, #764ba2);
+    color: white;
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 0.8em;
+    font-weight: bold;
+}
+
+.whiskey-scores {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin: 10px 0;
+}
+
+.score-item {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.9em;
+}
+
+.score-label {
+    color: #666;
+}
+
+.score-value {
+    font-weight: bold;
+    color: #333;
+}
+
+.ai-reason {
+    background: #f8f9fa;
+    padding: 10px;
+    border-radius: 8px;
+    margin-top: 10px;
+    font-size: 0.9em;
+    line-height: 1.4;
+}
+
+.whiskey-meta {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin: 8px 0;
+}
+
+.whiskey-meta span {
+    background: #e9ecef;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 0.8em;
+}
+/* AI 추천 관련 스타일 */
+.ai-analysis, .ai-summary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 20px;
+    border-radius: 12px;
+    margin-bottom: 20px;
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+}
+
+.analysis-header, .summary-header {
+    font-size: 1.1em;
+    font-weight: 600;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.analysis-header i, .summary-header i {
+    color: #ffd700;
+}
+
+.ai-recommendation {
+    border: 2px solid #667eea;
+    background: linear-gradient(135deg, #f5f7ff 0%, #ffffff 100%);
+    position: relative;
+}
+
+.ai-recommendation::before {
+    content: "AI 추천";
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: #667eea;
+    color: white;
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 0.8em;
+    font-weight: 600;
+}
+
+.flavor-scores {
+    margin: 15px 0;
+    padding: 15px;
+    background: rgba(102, 126, 234, 0.1);
+    border-radius: 8px;
+}
+
+.score-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.score-item:last-child {
+    margin-bottom: 0;
+}
+
+.score-label {
+    font-weight: 500;
+    color: #333;
+    font-size: 0.9em;
+}
+
+.score-stars {
+    color: #ffd700;
+    font-size: 1.1em;
+    letter-spacing: 2px;
+}
+
+.recommendation-reason {
+    margin-top: 15px;
+    padding: 15px;
+    background: rgba(118, 75, 162, 0.1);
+    border-radius: 8px;
+    border-left: 4px solid #764ba2;
+}
+
+.reason-header {
+    font-weight: 600;
+    color: #764ba2;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.9em;
+}
+
+.recommendation-reason p {
+    margin: 0;
+    color: #555;
+    line-height: 1.5;
+    font-size: 0.9em;
+}
+
+.whiskey-age {
+    color: #666;
+    font-size: 0.9em;
+    margin: 5px 0;
+    font-style: italic;
+}
+
+/* 반응형 디자인 */
+@media (max-width: 768px) {
+    .flavor-scores {
+        padding: 10px;
+    }
+    
+    .score-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 4px;
+    }
+    
+    .ai-recommendation::before {
+        position: static;
+        display: inline-block;
+        margin-bottom: 10px;
+    }
+}
+/* 추천 결과 복원 알림 스타일 */
+.restore-notification {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 1000;
+    background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+    color: white;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    animation: slideInRight 0.3s ease-out;
+}
+
+.notification-content {
+    display: flex;
+    align-items: center;
+    padding: 12px 16px;
+    gap: 10px;
+}
+
+.notification-content i {
+    font-size: 1.1em;
+    color: #fff;
+}
+
+.notification-content span {
+    font-weight: 500;
+    font-size: 0.9em;
+}
+
+.close-btn {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 1.2em;
+    cursor: pointer;
+    padding: 0 4px;
+    margin-left: 8px;
+    border-radius: 50%;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color 0.2s;
+}
+
+.close-btn:hover {
+    background-color: rgba(255, 255, 255, 0.2);
+}
+
+@keyframes slideInRight {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+/* 위스키 카드 모달 표시 */
+.ai-recommendation {
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+    position: relative;
+}
+
+.ai-recommendation:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.3);
+}
+
+.ai-recommendation::after {
+    content: "👁️";
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    font-size: 0.9em;
+    opacity: 0.8;
+    background: rgba(255, 255, 255, 0.9);
+    padding: 4px 6px;
+    border-radius: 50%;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+/* 위스키 상세 정보 모달 스타일 */
+.whiskey-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    animation: modalFadeIn 0.3s ease-out;
+}
+
+.whiskey-modal.hidden {
+    display: none;
+}
+
+.modal-backdrop {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+}
+
+.modal-content {
+    position: relative;
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    max-width: 600px;
+    width: 90%;
+    max-height: 80vh;
+    overflow-y: auto;
+    animation: modalSlideIn 0.3s ease-out;
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 24px;
+    border-bottom: 1px solid #eee;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border-radius: 16px 16px 0 0;
+}
+
+.modal-header h3 {
+    margin: 0;
+    font-size: 1.3em;
+    font-weight: 600;
+}
+
+.modal-close-btn {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 1.2em;
+    cursor: pointer;
+    padding: 8px;
+    border-radius: 50%;
+    transition: background-color 0.2s;
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.modal-close-btn:hover {
+    background-color: rgba(255, 255, 255, 0.2);
+}
+
+.modal-body {
+    padding: 24px;
+}
+
+.whiskey-main-info {
+    display: flex;
+    gap: 20px;
+    margin-bottom: 24px;
+}
+
+.whiskey-image-large {
+    flex-shrink: 0;
+}
+
+.whiskey-icon {
+    font-size: 4em;
+    background: linear-gradient(135deg, #f5f7ff 0%, #ffffff 100%);
+    border: 2px solid #667eea;
+    border-radius: 12px;
+    width: 100px;
+    height: 100px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.whiskey-details {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.detail-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.detail-label {
+    font-weight: 500;
+    color: #666;
+    font-size: 0.9em;
+}
+
+.detail-value {
+    font-weight: 600;
+    color: #333;
+    font-size: 1em;
+}
+
+.flavor-profile-section {
+    margin-bottom: 24px;
+}
+
+.flavor-profile-section h4 {
+    margin: 0 0 16px 0;
+    color: #333;
+    font-size: 1.1em;
+    font-weight: 600;
+}
+
+.flavor-bars {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.flavor-bar {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.flavor-name {
+    width: 60px;
+    font-size: 0.9em;
+    font-weight: 500;
+    color: #666;
+}
+
+.bar-container {
+    flex: 1;
+    height: 8px;
+    background: #f0f0f0;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+    border-radius: 4px;
+    transition: width 0.6s ease-out;
+}
+
+.flavor-score {
+    width: 20px;
+    text-align: center;
+    font-weight: 600;
+    color: #333;
+    font-size: 0.9em;
+}
+
+.recommendation-reason-section {
+    margin-bottom: 24px;
+}
+
+.recommendation-reason-section h4 {
+    margin: 0 0 12px 0;
+    color: #333;
+    font-size: 1.1em;
+    font-weight: 600;
+}
+
+.reason-text {
+    margin: 0;
+    color: #555;
+    line-height: 1.6;
+    background: rgba(102, 126, 234, 0.1);
+    padding: 16px;
+    border-radius: 8px;
+    border-left: 4px solid #667eea;
+}
+
+.modal-actions {
+    display: flex;
+    gap: 12px;
+    justify-content: flex-end;
+    padding-top: 16px;
+    border-top: 1px solid #eee;
+}
+
+.btn-secondary, .btn-primary {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 8px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.9em;
+}
+
+.btn-secondary {
+    background: #f8f9fa;
+    color: #666;
+    border: 1px solid #ddd;
+}
+
+.btn-secondary:hover {
+    background: #e9ecef;
+    color: #333;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+}
+
+.btn-primary:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+}
+
+/* 애니메이션 */
+@keyframes modalFadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes modalSlideIn {
+    from {
+        transform: translateY(-50px) scale(0.95);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0) scale(1);
+        opacity: 1;
+    }
+}
+
+/* 반응형 디자인 */
+@media (max-width: 768px) {
+    .modal-content {
+        width: 95%;
+        max-height: 90vh;
+    }
+    
+    .whiskey-main-info {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+    }
+    
+    .modal-actions {
+        flex-direction: column;
+    }
+    
+    .btn-secondary, .btn-primary {
+        justify-content: center;
+    }
+}

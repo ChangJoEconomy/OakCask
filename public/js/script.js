@@ -291,13 +291,25 @@ class WhiskeyApp {
         this.showLoading();
 
         try {
-            // Mock 추천 로직
-            await new Promise(resolve => setTimeout(resolve, 1000)); // 로딩 시뮬레이션
-            
-            const recommendations = this.mockRecommend(query);
-            this.displayRecommendations(recommendations);
+            // 실제 Agentica API 호출
+            const response = await fetch('/api/recommend', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ query })
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                this.displayAIRecommendations(data);
+            } else {
+                this.showError(data.message || '추천을 가져오는 중 오류가 발생했습니다.');
+            }
         } catch (error) {
-            this.showError('추천을 가져오는 중 오류가 발생했습니다.');
+            console.error('API 호출 오류:', error);
+            this.showError('서버와 연결할 수 없습니다.');
         } finally {
             this.hideLoading();
         }
@@ -801,4 +813,341 @@ function resetFilters() {
     
     // 페이지 이동 (모든 필터 제거)
     window.location.href = window.location.pathname;
+}
+
+// AI 추천 결과 표시 함수 추가
+if (typeof WhiskeyApp !== 'undefined') {
+    WhiskeyApp.prototype.displayAIRecommendations = function(data) {
+        const container = document.getElementById('recommendations-grid');
+        const recommendationsContainer = document.getElementById('recommendations-container');
+        const countText = document.getElementById('recommendation-count-text');
+        
+        if (!container || !recommendationsContainer) {
+            this.showError('추천 결과를 표시할 수 없습니다.');
+            return;
+        }
+        
+        if (!data.recommendations || data.recommendations.length === 0) {
+            this.showError('추천할 위스키를 찾을 수 없습니다.');
+            return;
+        }
+
+        // 추천 개수 업데이트
+        if (countText) {
+            countText.textContent = `${data.recommendations.length}개의 추천 결과`;
+        }
+
+        container.innerHTML = '';
+
+        // 분석 결과 표시
+        if (data.analysis) {
+            const analysisDiv = document.createElement('div');
+            analysisDiv.className = 'ai-analysis';
+            analysisDiv.innerHTML = `
+                <div class="analysis-header">
+                    <i class="fas fa-brain"></i> AI 분석 결과
+                </div>
+                <p>${data.analysis}</p>
+            `;
+            container.appendChild(analysisDiv);
+        }
+
+        // 추천 위스키 카드 생성
+        data.recommendations.forEach(rec => {
+            const card = this.createAIWhiskeyCard(rec);
+            container.appendChild(card);
+        });
+
+        // 요약 표시
+        if (data.summary) {
+            const summaryDiv = document.createElement('div');
+            summaryDiv.className = 'ai-summary';
+            summaryDiv.innerHTML = `
+                <div class="summary-header">
+                    <i class="fas fa-lightbulb"></i> 추천 요약
+                </div>
+                <p>${data.summary}</p>
+            `;
+            container.appendChild(summaryDiv);
+        }
+
+        recommendationsContainer.classList.remove('hidden');
+    };
+
+    WhiskeyApp.prototype.createAIWhiskeyCard = function(recommendation) {
+        const card = document.createElement('div');
+        card.className = 'whiskey-card ai-recommendation';
+        
+        // 위스키 카드 클릭 시 모달 열기
+        card.onclick = (e) => {
+            e.preventDefault();
+            openWhiskeyModal(recommendation);
+        };
+        
+        // 마우스 오버 시 툴팁 표시
+        card.title = '클릭하면 상세 정보를 확인할 수 있습니다';
+
+        // 맛 점수를 별점으로 변환
+        const createScoreStars = (score) => {
+            const stars = '★'.repeat(score) + '☆'.repeat(5 - score);
+            return stars;
+        };
+
+        card.innerHTML = `
+            <div class="whiskey-image">🥃</div>
+            <div class="whiskey-name">${recommendation.name}</div>
+            <div class="whiskey-type">${recommendation.type} | ${recommendation.origin}</div>
+            <div class="whiskey-price">${recommendation.price.toLocaleString()}원</div>
+            <div class="whiskey-age">${recommendation.age ? `${recommendation.age}년 숙성` : '숙성 정보 없음'}</div>
+            
+            <div class="flavor-scores">
+                <div class="score-item">
+                    <span class="score-label">바디감:</span>
+                    <span class="score-stars">${createScoreStars(recommendation.scores.body)}</span>
+                </div>
+                <div class="score-item">
+                    <span class="score-label">풍부함:</span>
+                    <span class="score-stars">${createScoreStars(recommendation.scores.richness)}</span>
+                </div>
+                <div class="score-item">
+                    <span class="score-label">스모키:</span>
+                    <span class="score-stars">${createScoreStars(recommendation.scores.smoke)}</span>
+                </div>
+                <div class="score-item">
+                    <span class="score-label">단맛:</span>
+                    <span class="score-stars">${createScoreStars(recommendation.scores.sweetness)}</span>
+                </div>
+            </div>
+            
+            <div class="recommendation-reason">
+                <div class="reason-header">
+                    <i class="fas fa-comment-alt"></i> 추천 이유
+                </div>
+                <p>${recommendation.reason}</p>
+            </div>
+        `;
+
+        return card;
+    };
+}
+// 추천 결과 저장/복원 기능
+if (typeof WhiskeyApp !== 'undefined') {
+    // 추천 결과 저장
+    WhiskeyApp.prototype.saveRecommendation = function(data, query) {
+        try {
+            sessionStorage.setItem('lastRecommendation', JSON.stringify({
+                data: data,
+                timestamp: Date.now(),
+                query: query
+            }));
+            console.log('추천 결과 저장됨');
+        } catch (error) {
+            console.error('추천 결과 저장 오류:', error);
+        }
+    };
+
+    // 저장된 추천 결과 복원
+    WhiskeyApp.prototype.restoreRecommendations = function() {
+        try {
+            const saved = sessionStorage.getItem('lastRecommendation');
+            if (saved) {
+                const { data, timestamp, query } = JSON.parse(saved);
+                
+                // 30분 이내의 결과만 복원 (1800000ms = 30분)
+                if (Date.now() - timestamp < 1800000) {
+                    console.log('저장된 추천 결과 복원 중...');
+                    
+                    // 질문 입력창에 이전 질문 복원
+                    const queryInput = document.getElementById('user-query');
+                    if (queryInput && query) {
+                        queryInput.value = query;
+                    }
+                    
+                    // 추천 결과 표시
+                    this.displayAIRecommendations(data);
+                    
+                    // 복원 알림 표시
+                    this.showRestoreNotification();
+                } else {
+                    // 오래된 데이터 삭제
+                    sessionStorage.removeItem('lastRecommendation');
+                }
+            }
+        } catch (error) {
+            console.error('추천 결과 복원 오류:', error);
+            sessionStorage.removeItem('lastRecommendation');
+        }
+    };
+
+    // 복원 알림 표시
+    WhiskeyApp.prototype.showRestoreNotification = function() {
+        const notification = document.createElement('div');
+        notification.className = 'restore-notification';
+        notification.innerHTML = `
+            <div class="notification-content">
+                <i class="fas fa-history"></i>
+                <span>이전 추천 결과를 복원했습니다</span>
+                <button onclick="this.parentElement.parentElement.remove()" class="close-btn">×</button>
+            </div>
+        `;
+        
+        document.body.appendChild(notification);
+        
+        // 5초 후 자동 제거
+        setTimeout(() => {
+            if (notification.parentElement) {
+                notification.remove();
+            }
+        }, 5000);
+    };
+
+    // 기존 displayAIRecommendations 함수 수정
+    const originalDisplayAI = WhiskeyApp.prototype.displayAIRecommendations;
+    WhiskeyApp.prototype.displayAIRecommendations = function(data) {
+        // 원래 함수 실행
+        originalDisplayAI.call(this, data);
+        
+        // 추천 결과 저장 (복원이 아닌 경우에만)
+        if (!this._isRestoring) {
+            const queryInput = document.getElementById('user-query');
+            const query = queryInput ? queryInput.value.trim() : '';
+            this.saveRecommendation(data, query);
+        }
+    };
+}
+
+// 페이지 로드 시 추천 결과 복원
+document.addEventListener('DOMContentLoaded', function() {
+    if (window.location.pathname === '/recommend' && typeof app !== 'undefined') {
+        setTimeout(() => {
+            app._isRestoring = true;
+            app.restoreRecommendations();
+            app._isRestoring = false;
+        }, 500);
+    }
+});
+// 위스키 모달 제어 함수들
+let currentWhiskeyId = null;
+
+function openWhiskeyModal(whiskey) {
+    currentWhiskeyId = whiskey.id;
+    
+    // 모달 요소들 가져오기
+    const modal = document.getElementById('whiskey-modal');
+    const name = document.getElementById('modal-whiskey-name');
+    const price = document.getElementById('modal-price');
+    const age = document.getElementById('modal-age');
+    const origin = document.getElementById('modal-origin');
+    const type = document.getElementById('modal-type');
+    const reason = document.getElementById('modal-reason');
+    
+    // 기본 정보 설정
+    name.textContent = whiskey.name;
+    price.textContent = whiskey.price.toLocaleString() + '원';
+    age.textContent = whiskey.age ? `${whiskey.age}년` : '정보 없음';
+    origin.textContent = whiskey.origin;
+    type.textContent = whiskey.type;
+    reason.textContent = whiskey.reason || '추천 이유가 제공되지 않았습니다.';
+    
+    // 맛 프로필 바 설정
+    if (whiskey.scores) {
+        setFlavorBar('modal-body-bar', 'modal-body-score', whiskey.scores.body);
+        setFlavorBar('modal-richness-bar', 'modal-richness-score', whiskey.scores.richness);
+        setFlavorBar('modal-smoke-bar', 'modal-smoke-score', whiskey.scores.smoke);
+        setFlavorBar('modal-sweetness-bar', 'modal-sweetness-score', whiskey.scores.sweetness);
+    }
+    
+    // 모달 표시
+    modal.classList.remove('hidden');
+    document.body.style.overflow = 'hidden'; // 배경 스크롤 방지
+    
+    // ESC 키로 모달 닫기
+    document.addEventListener('keydown', handleModalKeydown);
+}
+
+function closeWhiskeyModal() {
+    const modal = document.getElementById('whiskey-modal');
+    modal.classList.add('hidden');
+    document.body.style.overflow = ''; // 스크롤 복원
+    currentWhiskeyId = null;
+    
+    // 키보드 이벤트 리스너 제거
+    document.removeEventListener('keydown', handleModalKeydown);
+}
+
+function openWhiskeyDetailPage() {
+    if (currentWhiskeyId) {
+        window.open(`/whiskey/${currentWhiskeyId}`, '_blank');
+    }
+}
+
+function setFlavorBar(barId, scoreId, score) {
+    const bar = document.getElementById(barId);
+    const scoreElement = document.getElementById(scoreId);
+    
+    if (bar && scoreElement) {
+        const percentage = (score / 5) * 100;
+        bar.style.width = percentage + '%';
+        scoreElement.textContent = score;
+        
+        // 애니메이션 효과
+        setTimeout(() => {
+            bar.style.width = percentage + '%';
+        }, 100);
+    }
+}
+
+function handleModalKeydown(e) {
+    if (e.key === 'Escape') {
+        closeWhiskeyModal();
+    }
+}
+
+// 브라우저 뒤로가기 버튼으로 모달 닫기
+window.addEventListener('popstate', function(e) {
+    const modal = document.getElementById('whiskey-modal');
+    if (modal && !modal.classList.contains('hidden')) {
+        closeWhiskeyModal();
+        history.pushState(null, null, window.location.href);
+    }
+});
+
+// 모달이 열릴 때 히스토리 상태 추가
+function openWhiskeyModal(whiskey) {
+    currentWhiskeyId = whiskey.id;
+    
+    // 히스토리 상태 추가 (뒤로가기 버튼 활성화)
+    history.pushState({ modalOpen: true }, null, window.location.href);
+    
+    // 모달 요소들 가져오기
+    const modal = document.getElementById('whiskey-modal');
+    const name = document.getElementById('modal-whiskey-name');
+    const price = document.getElementById('modal-price');
+    const age = document.getElementById('modal-age');
+    const origin = document.getElementById('modal-origin');
+    const type = document.getElementById('modal-type');
+    const reason = document.getElementById('modal-reason');
+    
+    // 기본 정보 설정
+    name.textContent = whiskey.name;
+    price.textContent = whiskey.price.toLocaleString() + '원';
+    age.textContent = whiskey.age ? `${whiskey.age}년` : '정보 없음';
+    origin.textContent = whiskey.origin;
+    type.textContent = whiskey.type;
+    reason.textContent = whiskey.reason || '추천 이유가 제공되지 않았습니다.';
+    
+    // 맛 프로필 바 설정
+    if (whiskey.scores) {
+        setFlavorBar('modal-body-bar', 'modal-body-score', whiskey.scores.body);
+        setFlavorBar('modal-richness-bar', 'modal-richness-score', whiskey.scores.richness);
+        setFlavorBar('modal-smoke-bar', 'modal-smoke-score', whiskey.scores.smoke);
+        setFlavorBar('modal-sweetness-bar', 'modal-sweetness-score', whiskey.scores.sweetness);
+    }
+    
+    // 모달 표시
+    modal.classList.remove('hidden');
+    document.body.style.overflow = 'hidden'; // 배경 스크롤 방지
+    
+    // ESC 키로 모달 닫기
+    document.addEventListener('keydown', handleModalKeydown);
 }

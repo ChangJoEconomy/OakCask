@@ -47,3 +47,90 @@
         </div>
     </div>
 </main>
+<!-- 위스키 상세 정보 모달 -->
+<div id="whiskey-modal" class="whiskey-modal hidden">
+    <div class="modal-backdrop" onclick="closeWhiskeyModal()"></div>
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3 id="modal-whiskey-name">위스키 이름</h3>
+            <button class="modal-close-btn" onclick="closeWhiskeyModal()">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        
+        <div class="modal-body">
+            <div class="whiskey-main-info">
+                <div class="whiskey-image-large">
+                    <div class="whiskey-icon">🥃</div>
+                </div>
+                
+                <div class="whiskey-details">
+                    <div class="detail-item">
+                        <span class="detail-label">가격</span>
+                        <span id="modal-price" class="detail-value">-</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">숙성 연수</span>
+                        <span id="modal-age" class="detail-value">-</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">원산지</span>
+                        <span id="modal-origin" class="detail-value">-</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">타입</span>
+                        <span id="modal-type" class="detail-value">-</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="flavor-profile-section">
+                <h4>맛 프로필</h4>
+                <div class="flavor-bars">
+                    <div class="flavor-bar">
+                        <span class="flavor-name">바디감</span>
+                        <div class="bar-container">
+                            <div id="modal-body-bar" class="bar-fill"></div>
+                        </div>
+                        <span id="modal-body-score" class="flavor-score">0</span>
+                    </div>
+                    <div class="flavor-bar">
+                        <span class="flavor-name">풍부함</span>
+                        <div class="bar-container">
+                            <div id="modal-richness-bar" class="bar-fill"></div>
+                        </div>
+                        <span id="modal-richness-score" class="flavor-score">0</span>
+                    </div>
+                    <div class="flavor-bar">
+                        <span class="flavor-name">스모키</span>
+                        <div class="bar-container">
+                            <div id="modal-smoke-bar" class="bar-fill"></div>
+                        </div>
+                        <span id="modal-smoke-score" class="flavor-score">0</span>
+                    </div>
+                    <div class="flavor-bar">
+                        <span class="flavor-name">단맛</span>
+                        <div class="bar-container">
+                            <div id="modal-sweetness-bar" class="bar-fill"></div>
+                        </div>
+                        <span id="modal-sweetness-score" class="flavor-score">0</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="recommendation-reason-section">
+                <h4>추천 이유</h4>
+                <p id="modal-reason" class="reason-text">-</p>
+            </div>
+            
+            <div class="modal-actions">
+                <button class="btn-secondary" onclick="closeWhiskeyModal()">
+                    <i class="fas fa-arrow-left"></i> 돌아가기
+                </button>
+                <button id="modal-detail-btn" class="btn-primary" onclick="openWhiskeyDetailPage()">
+                    <i class="fas fa-external-link-alt"></i> 상세 페이지 보기
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
