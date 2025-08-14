@@ -3,87 +3,752 @@
     <div class="content-wrapper">
         <div class="page-header">
             <h2 class="page-title">
-                <i class="fas fa-sliders-h"></i> 위스키 취향 입력
+                <i class="fas fa-sliders-h"></i> 위스키 취향 설정
             </h2>
-            <p class="page-subtitle">개인화된 추천을 위해 선호하는 위스키 스타일을 알려주세요</p>
+            <p class="page-subtitle">당신만의 완벽한 위스키를 찾기 위한 취향 분석</p>
         </div>
 
-        <div class="content-card">
-            <div class="preferences-grid">
-                <div class="preference-item">
-                    <label><i class="fas fa-weight-hanging"></i> 바디감</label>
-                    <div class="slider-container">
-                        <input type="range" id="body-pref" min="0" max="5" value="3" class="modern-slider">
-                        <div class="slider-labels">
-                            <span>가벼움</span>
-                            <span id="body-value" class="slider-value">3</span>
-                            <span>무거움</span>
+        <form id="preferences-form" class="preferences-form">
+            <div class="preferences-section">
+                <h3 class="section-title">
+                    <i class="fas fa-palette"></i> 맛 선호도
+                </h3>
+                <div class="taste-grid">
+                    <!-- 바디감 -->
+                    <div class="taste-item">
+                        <div class="taste-header">
+                            <h4><i class="fas fa-weight-hanging"></i> 바디감</h4>
+                            <div class="value-display">
+                                <span class="current-value" id="body-display">보통</span>
+                            </div>
+                        </div>
+                        <div class="slider-wrapper">
+                            <input type="range" id="body-pref" min="1" max="5" value="3" class="preference-slider">
+                            <div class="slider-track">
+                                <div class="slider-labels">
+                                    <span class="label-left">가벼움</span>
+                                    <span class="label-right">진함</span>
+                                </div>
+                                <div class="slider-ticks">
+                                    <span>1</span>
+                                    <span>2</span>
+                                    <span>3</span>
+                                    <span>4</span>
+                                    <span>5</span>
+                                </div>
+                            </div>
                         </div>
                     </div>
-                </div>
-                <div class="preference-item">
-                    <label><i class="fas fa-palette"></i> 풍미</label>
-                    <div class="slider-container">
-                        <input type="range" id="richness-pref" min="0" max="5" value="3" class="modern-slider">
-                        <div class="slider-labels">
-                            <span>단순함</span>
-                            <span id="richness-value" class="slider-value">3</span>
-                            <span>복합적</span>
+
+                    <!-- 풍미 복잡도 -->
+                    <div class="taste-item">
+                        <div class="taste-header">
+                            <h4><i class="fas fa-layer-group"></i> 풍미 복잡도</h4>
+                            <div class="value-display">
+                                <span class="current-value" id="richness-display">보통</span>
+                            </div>
+                        </div>
+                        <div class="slider-wrapper">
+                            <input type="range" id="richness-pref" min="1" max="5" value="3" class="preference-slider">
+                            <div class="slider-track">
+                                <div class="slider-labels">
+                                    <span class="label-left">단순함</span>
+                                    <span class="label-right">복잡함</span>
+                                </div>
+                                <div class="slider-ticks">
+                                    <span>1</span>
+                                    <span>2</span>
+                                    <span>3</span>
+                                    <span>4</span>
+                                    <span>5</span>
+                                </div>
+                            </div>
                         </div>
                     </div>
-                </div>
-                <div class="preference-item">
-                    <label><i class="fas fa-fire"></i> 스모키함</label>
-                    <div class="slider-container">
-                        <input type="range" id="smokiness-pref" min="0" max="5" value="3" class="modern-slider">
-                        <div class="slider-labels">
-                            <span>없음</span>
-                            <span id="smokiness-value" class="slider-value">3</span>
-                            <span>강함</span>
+
+                    <!-- 스모키함 -->
+                    <div class="taste-item">
+                        <div class="taste-header">
+                            <h4><i class="fas fa-fire"></i> 스모키함</h4>
+                            <div class="value-display">
+                                <span class="current-value" id="smoke-display">보통</span>
+                            </div>
+                        </div>
+                        <div class="slider-wrapper">
+                            <input type="range" id="smokiness-pref" min="1" max="5" value="3" class="preference-slider">
+                            <div class="slider-track">
+                                <div class="slider-labels">
+                                    <span class="label-left">없음</span>
+                                    <span class="label-right">강함</span>
+                                </div>
+                                <div class="slider-ticks">
+                                    <span>1</span>
+                                    <span>2</span>
+                                    <span>3</span>
+                                    <span>4</span>
+                                    <span>5</span>
+                                </div>
+                            </div>
                         </div>
                     </div>
-                </div>
-                <div class="preference-item">
-                    <label><i class="fas fa-candy-cane"></i> 단맛</label>
-                    <div class="slider-container">
-                        <input type="range" id="sweetness-pref" min="0" max="5" value="3" class="modern-slider">
-                        <div class="slider-labels">
-                            <span>드라이</span>
-                            <span id="sweetness-value" class="slider-value">3</span>
-                            <span>달콤함</span>
+
+                    <!-- 단맛 -->
+                    <div class="taste-item">
+                        <div class="taste-header">
+                            <h4><i class="fas fa-candy-cane"></i> 단맛</h4>
+                            <div class="value-display">
+                                <span class="current-value" id="sweetness-display">보통</span>
+                            </div>
+                        </div>
+                        <div class="slider-wrapper">
+                            <input type="range" id="sweetness-pref" min="1" max="5" value="3" class="preference-slider">
+                            <div class="slider-track">
+                                <div class="slider-labels">
+                                    <span class="label-left">드라이</span>
+                                    <span class="label-right">달콤함</span>
+                                </div>
+                                <div class="slider-ticks">
+                                    <span>1</span>
+                                    <span>2</span>
+                                    <span>3</span>
+                                    <span>4</span>
+                                    <span>5</span>
+                                </div>
+                            </div>
                         </div>
                     </div>
-                </div>
-                <div class="preference-item full-width">
-                    <label><i class="fas fa-won-sign"></i> 선호 최소 가격</label>
-                    <div class="slider-container">
-                        <input type="range" id="min-price-pref" min="0" max="500000" step="10000" value="0" class="modern-slider">
-                        <div class="slider-labels">
-                            <span>0원</span>
-                            <span id="min-price-value" class="slider-value">0원</span>
-                            <span>500,000원</span>
-                        </div>
-                    </div>
-                </div>
-                <div class="preference-item full-width">
-                    <label><i class="fas fa-won-sign"></i> 선호 최대 가격</label>
-                    <div class="slider-container">
-                        <input type="range" id="max-price-pref" min="0" max="500000" step="10000" value="200000" class="modern-slider">
-                        <div class="slider-labels">
-                            <span>0원</span>
-                            <span id="max-price-value" class="slider-value">200,000원</span>
-                            <span>500,000원</span>
-                        </div>
-                    </div>
-                </div>
-                <div class="preference-item full-width">
-                    <label><i class="fas fa-tags"></i> 선호 맛/향 키워드</label>
-                    <textarea id="flavor-keywords" class="modern-textarea" placeholder="예: 피트, 스모키, 바닐라, 꿀 (쉼표로 구분)"></textarea>
                 </div>
             </div>
-            <button id="save-preferences-btn" class="primary-btn">
-                <i class="fas fa-save"></i> 취향 저장
-            </button>
-        </div>
+
+            <div class="preferences-section">
+                <h3 class="section-title">
+                    <i class="fas fa-filter"></i> 필터 조건
+                </h3>
+                <div class="filter-grid">
+                    <div class="filter-group">
+                        <h4><i class="fas fa-won-sign"></i> 가격대</h4>
+                        <div class="input-row">
+                            <div class="input-group">
+                                <label>최소</label>
+                                <input type="number" id="min-price-pref" min="0" max="1000000" step="10000" value="50000" class="price-input">
+                                <span class="unit">원</span>
+                            </div>
+                            <div class="input-separator">~</div>
+                            <div class="input-group">
+                                <label>최대</label>
+                                <input type="number" id="max-price-pref" min="0" max="1000000" step="10000" value="300000" class="price-input">
+                                <span class="unit">원</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="filter-group">
+                        <h4><i class="fas fa-thermometer-half"></i> 도수</h4>
+                        <div class="input-row">
+                            <div class="input-group">
+                                <label>최소</label>
+                                <input type="number" id="min-alcohol-pref" min="0" max="80" step="0.5" value="40" class="alcohol-input">
+                                <span class="unit">%</span>
+                            </div>
+                            <div class="input-separator">~</div>
+                            <div class="input-group">
+                                <label>최대</label>
+                                <input type="number" id="max-alcohol-pref" min="0" max="80" step="0.5" value="60" class="alcohol-input">
+                                <span class="unit">%</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="preferences-section">
+                <h3 class="section-title">
+                    <i class="fas fa-tags"></i> 선호 키워드
+                </h3>
+                <div class="keyword-input">
+                    <textarea id="keyword" placeholder="선호하는 맛이나 향을 자유롭게 적어주세요. (예: 바닐라, 꿀, 과일, 견과류, 초콜릿 등)"></textarea>
+                    <div class="keyword-hint">
+                        <i class="fas fa-lightbulb"></i> 
+                        쉼표(,)로 구분하여 여러 키워드를 입력할 수 있습니다.
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-actions">
+                <button type="button" id="save-preferences-btn" class="save-btn">
+                    <i class="fas fa-save"></i>
+                    <span class="btn-text">취향 저장하기</span>
+                </button>
+            </div>
+        </form>
     </div>
 </main>
+
+<style>
+/* 선호도 설정 페이지 전용 스타일 */
+.preferences-form {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 0;
+}
+
+.preferences-section {
+    background: white;
+    border-radius: 12px;
+    padding: 30px;
+    margin-bottom: 30px;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+    border: 1px solid #e5e7eb;
+}
+
+.section-title {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 1.4em;
+    font-weight: 600;
+    color: #1f2937;
+    margin: 0 0 25px 0;
+    padding-bottom: 12px;
+    border-bottom: 2px solid #f3f4f6;
+}
+
+.section-title i {
+    color: #8b5a3c;
+    font-size: 1.2em;
+}
+
+/* 맛 선호도 그리드 */
+.taste-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 25px;
+}
+
+.taste-item {
+    background: #fefefe;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    padding: 20px;
+    transition: all 0.3s ease;
+}
+
+.taste-item:hover {
+    box-shadow: 0 4px 12px rgba(139, 90, 60, 0.1);
+    border-color: #d1d5db;
+}
+
+.taste-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.taste-header h4 {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 1.1em;
+    font-weight: 600;
+    color: #374151;
+    margin: 0;
+}
+
+.taste-header h4 i {
+    color: #8b5a3c;
+    font-size: 1em;
+}
+
+.value-display {
+    background: #8b5a3c;
+    color: white;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 0.9em;
+    font-weight: 600;
+    min-width: 60px;
+    text-align: center;
+}
+
+/* 슬라이더 스타일 */
+.slider-wrapper {
+    position: relative;
+}
+
+.preference-slider {
+    width: 100%;
+    height: 8px;
+    border-radius: 4px;
+    background: #e5e7eb;
+    outline: none;
+    appearance: none;
+    cursor: pointer;
+    margin-bottom: 15px;
+}
+
+.preference-slider::-webkit-slider-thumb {
+    appearance: none;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: #8b5a3c;
+    cursor: pointer;
+    border: 3px solid white;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+    transition: all 0.2s ease;
+}
+
+.preference-slider::-webkit-slider-thumb:hover {
+    background: #7a4d35;
+    transform: scale(1.1);
+}
+
+.preference-slider::-moz-range-thumb {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: #8b5a3c;
+    cursor: pointer;
+    border: 3px solid white;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+}
+
+.slider-track {
+    margin-top: 5px;
+}
+
+.slider-labels {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.85em;
+    color: #6b7280;
+    font-weight: 500;
+    margin-bottom: 8px;
+}
+
+.slider-ticks {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.75em;
+    color: #9ca3af;
+}
+
+/* 필터 조건 */
+.filter-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 30px;
+}
+
+.filter-group h4 {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 1em;
+    font-weight: 600;
+    color: #374151;
+    margin: 0 0 15px 0;
+}
+
+.filter-group h4 i {
+    color: #8b5a3c;
+}
+
+.input-row {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.input-group {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    flex: 1;
+}
+
+.input-group label {
+    font-size: 0.85em;
+    color: #6b7280;
+    font-weight: 500;
+}
+
+.price-input, .alcohol-input {
+    padding: 10px 12px;
+    border: 2px solid #e5e7eb;
+    border-radius: 6px;
+    font-size: 1em;
+    transition: all 0.2s ease;
+    background: white;
+}
+
+.price-input:focus, .alcohol-input:focus {
+    outline: none;
+    border-color: #8b5a3c;
+    box-shadow: 0 0 0 3px rgba(139, 90, 60, 0.1);
+}
+
+.unit {
+    font-size: 0.9em;
+    color: #6b7280;
+    margin-top: 5px;
+    align-self: center;
+}
+
+.input-separator {
+    font-size: 1.2em;
+    color: #6b7280;
+    font-weight: 600;
+    margin-top: 20px;
+}
+
+/* 키워드 입력 */
+.keyword-input {
+    position: relative;
+}
+
+.keyword-input textarea {
+    width: 100%;
+    min-height: 100px;
+    padding: 15px;
+    border: 2px solid #e5e7eb;
+    border-radius: 8px;
+    font-size: 1em;
+    font-family: inherit;
+    resize: vertical;
+    transition: all 0.2s ease;
+    background: white;
+}
+
+.keyword-input textarea:focus {
+    outline: none;
+    border-color: #8b5a3c;
+    box-shadow: 0 0 0 3px rgba(139, 90, 60, 0.1);
+}
+
+.keyword-hint {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 10px;
+    font-size: 0.85em;
+    color: #6b7280;
+}
+
+.keyword-hint i {
+    color: #fbbf24;
+}
+
+/* 저장 버튼 */
+.form-actions {
+    text-align: center;
+    margin-top: 40px;
+}
+
+.save-btn {
+    background: linear-gradient(135deg, #8b5a3c 0%, #a0693e 100%);
+    color: white;
+    border: none;
+    padding: 15px 40px;
+    border-radius: 50px;
+    font-size: 1.1em;
+    font-weight: 600;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(139, 90, 60, 0.2);
+    min-width: 200px;
+    justify-content: center;
+}
+
+.save-btn:hover {
+    background: linear-gradient(135deg, #7a4d35 0%, #8b5a3c 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(139, 90, 60, 0.3);
+}
+
+.save-btn:active {
+    transform: translateY(0);
+}
+
+.save-btn:disabled {
+    background: #9ca3af;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.save-btn i {
+    font-size: 1.2em;
+}
+
+/* 반응형 디자인 */
+@media (max-width: 768px) {
+    .preferences-section {
+        padding: 20px;
+        margin-bottom: 20px;
+    }
+    
+    .taste-grid {
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+    
+    .filter-grid {
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+    
+    .input-row {
+        flex-direction: column;
+        gap: 15px;
+    }
+    
+    .input-separator {
+        margin: 0;
+        align-self: center;
+    }
+    
+    .save-btn {
+        padding: 12px 30px;
+        font-size: 1em;
+        min-width: 160px;
+    }
+}
+
+/* 로딩 애니메이션 */
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.fa-spin {
+    animation: spin 1s linear infinite;
+}
+</style>
+
+<script>
+// 선호도 설정 관리 클래스
+class PreferenceManager {
+    constructor() {
+        this.isLoading = false;
+        this.isSaving = false;
+        this.sliders = {
+            body: { element: null, display: null, labels: ['매우 가벼움', '가벼움', '보통', '진함', '매우 진함'] },
+            richness: { element: null, display: null, labels: ['매우 단순', '단순', '보통', '복잡', '매우 복잡'] },
+            smokiness: { element: null, display: null, labels: ['없음', '약함', '보통', '강함', '매우 강함'] },
+            sweetness: { element: null, display: null, labels: ['매우 드라이', '드라이', '보통', '달콤', '매우 달콤'] }
+        };
+        
+        this.init();
+    }
+
+    init() {
+        // DOM이 로드된 후 실행
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', () => this.setupElements());
+        } else {
+            this.setupElements();
+        }
+    }
+
+    setupElements() {
+        // 슬라이더 요소 설정
+        Object.keys(this.sliders).forEach(key => {
+            const sliderId = key === 'smokiness' ? 'smokiness-pref' : `${key}-pref`;
+            const displayId = key === 'richness' ? 'richness-display' : 
+                             key === 'smokiness' ? 'smoke-display' : `${key}-display`;
+            
+            this.sliders[key].element = document.getElementById(sliderId);
+            this.sliders[key].display = document.getElementById(displayId);
+            
+            if (this.sliders[key].element && this.sliders[key].display) {
+                this.sliders[key].element.addEventListener('input', () => {
+                    this.updateSliderDisplay(key);
+                });
+                this.updateSliderDisplay(key); // 초기값 설정
+            }
+        });
+
+        // 저장 버튼 설정
+        const saveBtn = document.getElementById('save-preferences-btn');
+        if (saveBtn) {
+            saveBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                this.savePreferences();
+            });
+        }
+
+        // 사용자 선호도 로드
+        this.loadPreferences();
+    }
+
+    updateSliderDisplay(sliderKey) {
+        const slider = this.sliders[sliderKey];
+        if (slider.element && slider.display) {
+            const value = parseInt(slider.element.value);
+            const label = slider.labels[value - 1] || '보통';
+            slider.display.textContent = label;
+        }
+    }
+
+    async loadPreferences() {
+        if (this.isLoading) return;
+        
+        this.isLoading = true;
+        
+        try {
+            const response = await fetch('/api/preferences', {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            if (!response.ok) {
+                throw new Error('네트워크 응답 오류');
+            }
+
+            const result = await response.json();
+            
+            if (result.success && result.preference) {
+                this.populateForm(result.preference);
+            }
+        } catch (error) {
+            console.error('선호도 로드 실패:', error);
+        } finally {
+            this.isLoading = false;
+        }
+    }
+
+    populateForm(preference) {
+        // 슬라이더 값 설정
+        Object.keys(this.sliders).forEach(key => {
+            const fieldName = key === 'smokiness' ? 'smoke' : key;
+            if (preference[fieldName] !== null && preference[fieldName] !== undefined) {
+                const element = this.sliders[key].element;
+                if (element) {
+                    element.value = preference[fieldName];
+                    this.updateSliderDisplay(key);
+                }
+            }
+        });
+
+        // 가격 설정
+        this.setInputValue('min-price-pref', preference.min_price);
+        this.setInputValue('max-price-pref', preference.max_price);
+
+        // 도수 설정
+        this.setInputValue('min-alcohol-pref', preference.min_alcohol);
+        this.setInputValue('max-alcohol-pref', preference.max_alcohol);
+
+        // 키워드 설정
+        this.setInputValue('keyword', preference.keyword);
+    }
+
+    setInputValue(elementId, value) {
+        const element = document.getElementById(elementId);
+        if (element && value !== null && value !== undefined) {
+            element.value = value;
+        }
+    }
+
+    async savePreferences() {
+        if (this.isSaving) return;
+        
+        this.isSaving = true;
+        const saveBtn = document.getElementById('save-preferences-btn');
+        const originalContent = saveBtn.innerHTML;
+
+        try {
+            // 버튼 상태 변경
+            saveBtn.disabled = true;
+            saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i><span class="btn-text">저장 중...</span>';
+
+            // 데이터 수집
+            const data = this.collectFormData();
+            console.log('전송할 데이터:', data);
+
+            // API 호출
+            const response = await fetch('/api/preferences', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data)
+            });
+
+            const result = await response.json();
+            console.log('서버 응답:', result);
+            
+            if (response.ok && result.success) {
+                // 성공 시 성공 메시지와 함께 버튼 상태 변경
+                saveBtn.innerHTML = '<i class="fas fa-check"></i><span class="btn-text">저장 완료!</span>';
+                setTimeout(() => {
+                    alert('취향이 성공적으로 저장되었습니다!');
+                }, 100);
+            } else {
+                throw new Error(result.message || '저장 실패');
+            }
+
+        } catch (error) {
+            console.error('저장 오류:', error);
+            alert('저장 중 오류가 발생했습니다: ' + error.message);
+        } finally {
+            // 2초 후 버튼 상태 복구
+            setTimeout(() => {
+                saveBtn.disabled = false;
+                saveBtn.innerHTML = originalContent;
+                this.isSaving = false;
+            }, 2000);
+        }
+    }
+
+    collectFormData() {
+        const data = {};
+
+        // 슬라이더 값 수집
+        Object.keys(this.sliders).forEach(key => {
+            const fieldName = key === 'smokiness' ? 'smoke' : key;
+            const element = this.sliders[key].element;
+            if (element) {
+                data[fieldName] = parseInt(element.value) || 3;
+            }
+        });
+
+        // 숫자 입력값 수집
+        data.min_price = this.getNumberValue('min-price-pref');
+        data.max_price = this.getNumberValue('max-price-pref');
+        data.min_alcohol = this.getNumberValue('min-alcohol-pref');
+        data.max_alcohol = this.getNumberValue('max-alcohol-pref');
+
+        // 키워드 수집
+        data.keyword = this.getStringValue('keyword');
+
+        return data;
+    }
+
+    getNumberValue(elementId) {
+        const element = document.getElementById(elementId);
+        if (element && element.value) {
+            const value = parseFloat(element.value);
+            return isNaN(value) ? null : value;
+        }
+        return null;
+    }
+
+    getStringValue(elementId) {
+        const element = document.getElementById(elementId);
+        return element ? element.value.trim() : '';
+    }
+}
+
+// 전역 중복 실행 방지
+if (!window.preferenceManagerInstance) {
+    window.preferenceManagerInstance = new PreferenceManager();
+}
+</script>

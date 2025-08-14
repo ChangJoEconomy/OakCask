@@ -7,6 +7,8 @@ const {
 } = require('../controllers/index');
 const {
     getPreferencesPage,
+    savePreference,
+    getPreference
 } = require("../controllers/preferences");
 const {
     getEvaluatedPage,
@@ -97,5 +99,10 @@ router.route('/api/recent-view')
 
 router.route('/api/recent-view/:whiskey_id')
     .delete(checkLogin, removeRecentView);
+
+// 선호도 저장 API
+router.route('/api/preferences')
+    .get(checkLogin, getPreference)
+    .post(checkLogin, savePreference);
 
 module.exports = router;

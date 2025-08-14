@@ -10,6 +10,25 @@
 
         <div class="content-card">
             <div class="input-section">
+                <!-- 취향정보 반영 토글 -->
+                <div class="preference-toggle-section">
+                    <div class="toggle-wrapper">
+                        <label class="toggle-container">
+                            <input type="checkbox" id="use-preferences" class="toggle-input">
+                            <span class="toggle-slider"></span>
+                        </label>
+                        <div class="toggle-info">
+                            <h4 class="toggle-title">
+                                <i class="fas fa-user-cog"></i> 내 취향정보 반영하기
+                            </h4>
+                            <p class="toggle-description">
+                                저장된 취향 정보를 바탕으로 더 개인화된 추천을 받을 수 있습니다.
+                            </p>
+                            <div id="preference-status" class="preference-status"></div>
+                        </div>
+                    </div>
+                </div>
+
                 <div class="input-group">
                     <label for="user-query" class="input-label">
                         <i class="fas fa-comment-dots"></i> 어떤 위스키를 찾고 계신가요?
@@ -134,3 +153,348 @@
         </div>
     </div>
 </div>
+
+<style>
+/* 취향정보 토글 섹션 */
+.preference-toggle-section {
+    background: #f8f9fa;
+    border: 2px solid #e9ecef;
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 25px;
+    transition: all 0.3s ease;
+}
+
+.preference-toggle-section:hover {
+    border-color: #8b5a3c;
+    background: #f7f5f3;
+}
+
+.toggle-wrapper {
+    display: flex;
+    gap: 15px;
+    align-items: flex-start;
+}
+
+/* 토글 스위치 */
+.toggle-container {
+    display: block;
+    position: relative;
+    cursor: pointer;
+    flex-shrink: 0;
+    margin-top: 5px;
+}
+
+.toggle-input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.toggle-slider {
+    position: relative;
+    display: block;
+    width: 60px;
+    height: 32px;
+    background-color: #ccc;
+    border-radius: 16px;
+    transition: all 0.3s ease;
+}
+
+.toggle-slider::before {
+    content: '';
+    position: absolute;
+    height: 24px;
+    width: 24px;
+    left: 4px;
+    top: 4px;
+    background-color: white;
+    border-radius: 50%;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.toggle-input:checked + .toggle-slider {
+    background-color: #8b5a3c;
+}
+
+.toggle-input:checked + .toggle-slider::before {
+    transform: translateX(28px);
+}
+
+/* 토글 정보 */
+.toggle-info {
+    flex: 1;
+}
+
+.toggle-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 1.1em;
+    font-weight: 600;
+    color: #374151;
+    margin: 0 0 8px 0;
+}
+
+.toggle-title i {
+    color: #8b5a3c;
+}
+
+.toggle-description {
+    font-size: 0.9em;
+    color: #6b7280;
+    margin: 0 0 10px 0;
+    line-height: 1.5;
+}
+
+/* 취향정보 상태 */
+.preference-status {
+    font-size: 0.85em;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-weight: 500;
+    display: inline-block;
+    transition: all 0.2s ease;
+}
+
+.preference-status.loaded {
+    background: #d1fae5;
+    color: #065f46;
+    border: 1px solid #a7f3d0;
+}
+
+.preference-status.not-found {
+    background: #fed7d7;
+    color: #c53030;
+    border: 1px solid #feb2b2;
+}
+
+.preference-status.loading {
+    background: #e0f2fe;
+    color: #0277bd;
+    border: 1px solid #b3e5fc;
+}
+
+/* 반응형 디자인 */
+@media (max-width: 768px) {
+    .toggle-wrapper {
+        flex-direction: column;
+        gap: 12px;
+    }
+    
+    .toggle-container {
+        align-self: flex-start;
+        margin-top: 0;
+    }
+    
+    .preference-toggle-section {
+        padding: 15px;
+        margin-bottom: 20px;
+    }
+}
+</style>
+
+<script>
+class RecommendationManager {
+    constructor() {
+        this.userPreferences = null;
+        this.isLoadingPreferences = false;
+        this.init();
+    }
+
+    init() {
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', () => this.setupElements());
+        } else {
+            this.setupElements();
+        }
+    }
+
+    setupElements() {
+        // 토글 버튼 이벤트
+        const toggleInput = document.getElementById('use-preferences');
+        if (toggleInput) {
+            toggleInput.addEventListener('change', () => this.handleToggleChange());
+        }
+
+        // 추천 버튼 이벤트
+        const recommendBtn = document.getElementById('recommend-btn');
+        if (recommendBtn) {
+            recommendBtn.addEventListener('click', () => this.handleRecommendation());
+        }
+
+        // 초기 상태 설정
+        this.updatePreferenceStatus('토글을 켜면 취향정보를 불러옵니다', 'loading');
+    }
+
+    async handleToggleChange() {
+        const toggleInput = document.getElementById('use-preferences');
+        
+        if (toggleInput.checked) {
+            await this.loadUserPreferences();
+        } else {
+            this.userPreferences = null;
+            this.updatePreferenceStatus('취향정보를 사용하지 않습니다', '');
+        }
+    }
+
+    async loadUserPreferences() {
+        if (this.isLoadingPreferences) return;
+        
+        this.isLoadingPreferences = true;
+        this.updatePreferenceStatus('취향정보를 불러오는 중...', 'loading');
+
+        try {
+            const response = await fetch('/api/preferences');
+            const result = await response.json();
+            
+            if (result.success && result.preference) {
+                this.userPreferences = result.preference;
+                this.updatePreferenceStatus('취향정보가 로드되었습니다 ✓', 'loaded');
+            } else {
+                this.userPreferences = null;
+                this.updatePreferenceStatus('취향정보를 먼저 입력해주세요', 'not-found');
+                
+                // 토글 자동 해제
+                const toggleInput = document.getElementById('use-preferences');
+                if (toggleInput) {
+                    toggleInput.checked = false;
+                }
+            }
+        } catch (error) {
+            console.error('취향정보 로드 실패:', error);
+            this.userPreferences = null;
+            this.updatePreferenceStatus('취향정보를 불러올 수 없습니다', 'not-found');
+            
+            // 토글 자동 해제
+            const toggleInput = document.getElementById('use-preferences');
+            if (toggleInput) {
+                toggleInput.checked = false;
+            }
+        } finally {
+            this.isLoadingPreferences = false;
+        }
+    }
+
+    updatePreferenceStatus(message, type) {
+        const statusElement = document.getElementById('preference-status');
+        if (statusElement) {
+            statusElement.textContent = message;
+            statusElement.className = `preference-status ${type}`;
+        }
+    }
+
+    async handleRecommendation() {
+        const queryInput = document.getElementById('user-query');
+        const toggleInput = document.getElementById('use-preferences');
+        const recommendBtn = document.getElementById('recommend-btn');
+        
+        if (!queryInput || !recommendBtn) return;
+
+        const query = queryInput.value.trim();
+        if (!query) {
+            alert('질문을 입력해주세요.');
+            queryInput.focus();
+            return;
+        }
+
+        // 취향정보 사용 체크
+        if (toggleInput.checked && !this.userPreferences) {
+            alert('취향정보를 먼저 입력해주세요.\n취향 설정 페이지에서 정보를 입력한 후 다시 시도해주세요.');
+            return;
+        }
+
+        const originalHTML = recommendBtn.innerHTML;
+        
+        try {
+            // 버튼 상태 변경
+            recommendBtn.disabled = true;
+            recommendBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 추천 받는 중...';
+
+            // 요청 데이터 준비
+            const requestData = {
+                query: query,
+                usePreferences: toggleInput.checked,
+                preferences: toggleInput.checked ? this.userPreferences : null
+            };
+
+            // API 호출
+            const response = await fetch('/api/recommend', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(requestData)
+            });
+
+            const result = await response.json();
+            
+            if (result.success) {
+                this.displayRecommendations(result);
+            } else {
+                alert('추천 실패: ' + (result.message || '알 수 없는 오류'));
+            }
+
+        } catch (error) {
+            console.error('추천 요청 실패:', error);
+            alert('네트워크 오류가 발생했습니다. 다시 시도해주세요.');
+        } finally {
+            // 버튼 상태 복구
+            recommendBtn.disabled = false;
+            recommendBtn.innerHTML = originalHTML;
+        }
+    }
+
+    displayRecommendations(result) {
+        const container = document.getElementById('recommendations-container');
+        const grid = document.getElementById('recommendations-grid');
+        const countText = document.getElementById('recommendation-count-text');
+        
+        if (!container || !grid || !countText) return;
+
+        // 추천 결과 표시
+        if (result.recommendations && result.recommendations.length > 0) {
+            countText.textContent = `${result.recommendations.length}개의 추천 결과`;
+            
+            // 추천 카드 생성
+            grid.innerHTML = result.recommendations.map(whiskey => 
+                this.createWhiskeyCard(whiskey)
+            ).join('');
+            
+            container.classList.remove('hidden');
+            
+            // 스크롤 이동
+            container.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        } else {
+            alert('조건에 맞는 위스키를 찾을 수 없습니다.');
+        }
+    }
+
+    createWhiskeyCard(whiskey) {
+        // 기존 카드 생성 로직을 여기에 구현하거나
+        // 기존 함수를 호출하도록 수정
+        return `
+            <div class="whiskey-card" onclick="openWhiskeyModal('${whiskey.whiskey_id}')">
+                <div class="whiskey-image">
+                    <div class="whiskey-icon">🥃</div>
+                </div>
+                <div class="whiskey-info">
+                    <h4 class="whiskey-name">${whiskey.name}</h4>
+                    <p class="whiskey-price">${whiskey.price ? whiskey.price.toLocaleString() + '원' : '가격 정보 없음'}</p>
+                    <div class="whiskey-tags">
+                        ${whiskey.age ? `<span class="tag">${whiskey.age}년산</span>` : ''}
+                        ${whiskey.type ? `<span class="tag">${whiskey.type}</span>` : ''}
+                    </div>
+                    <p class="recommendation-reason">${whiskey.reason || '추천 이유가 제공되지 않았습니다.'}</p>
+                </div>
+            </div>
+        `;
+    }
+}
+
+// 전역 인스턴스 생성
+if (!window.recommendationManager) {
+    window.recommendationManager = new RecommendationManager();
+}
+</script>
