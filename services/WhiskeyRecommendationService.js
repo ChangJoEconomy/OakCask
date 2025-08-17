@@ -19,7 +19,9 @@ class WhiskeyRecommendationService {
     async getAllWhiskeys() {
         try {
             await this.ensureConnection();
-            const whiskeys = await Whiskey.find({}).lean();
+            const whiskeys = await Whiskey
+                .find({}, 'whiskey_id name price age_years origin type body richness smoke sweetness image_path')
+                .lean();
             return whiskeys.map(w => ({
                 id: w.whiskey_id,
                 name: w.name,
@@ -30,7 +32,8 @@ class WhiskeyRecommendationService {
                 body: w.body || 0,
                 richness: w.richness || 0,
                 smoke: w.smoke || 0,
-                sweetness: w.sweetness || 0
+                sweetness: w.sweetness || 0,
+                image_path: w.image_path || null
             }));
         } catch (error) {
             console.error('위스키 목록 조회 실패:', error);
@@ -38,12 +41,65 @@ class WhiskeyRecommendationService {
         }
     }
 
+    async getAllWhiskeysLimited(limit = 20) {
+        try {
+            await this.ensureConnection();
+            const whiskeys = await Whiskey
+                .find({}, 'whiskey_id name price age_years origin type body richness smoke sweetness image_path')
+                .limit(limit)
+                .lean();
+            return whiskeys.map(w => ({
+                id: w.whiskey_id,
+                name: w.name,
+                price: w.price,
+                age: w.age_years || null,
+                origin: w.origin || '미상',
+                type: w.type || '미상',
+                body: w.body || 0,
+                richness: w.richness || 0,
+                smoke: w.smoke || 0,
+                sweetness: w.sweetness || 0,
+                image_path: w.image_path || null
+            }));
+        } catch (error) {
+            console.error('위스키 제한 목록 조회 실패:', error);
+            return [];
+        }
+    }
+
+    async getSampleWhiskeys(sampleSize = 200) {
+        try {
+            await this.ensureConnection();
+            const docs = await Whiskey.aggregate([
+                { $sample: { size: sampleSize } },
+                { $project: { whiskey_id: 1, name: 1, price: 1, age_years: 1, origin: 1, type: 1, body: 1, richness: 1, smoke: 1, sweetness: 1, image_path: 1 } }
+            ]);
+            return docs.map(w => ({
+                id: w.whiskey_id,
+                name: w.name,
+                price: w.price,
+                age: w.age_years || null,
+                origin: w.origin || '미상',
+                type: w.type || '미상',
+                body: w.body || 0,
+                richness: w.richness || 0,
+                smoke: w.smoke || 0,
+                sweetness: w.sweetness || 0,
+                image_path: w.image_path || null
+            }));
+        } catch (error) {
+            console.error('위스키 샘플 조회 실패:', error);
+            return [];
+        }
+    }
+
     async getWhiskeysByPriceRange(minPrice, maxPrice) {
         try {
             await this.ensureConnection();
-            const whiskeys = await Whiskey.find({
-                price: { $gte: minPrice, $lte: maxPrice }
-            }).lean();
+            const whiskeys = await Whiskey
+                .find({ price: { $gte: minPrice, $lte: maxPrice } }, 'whiskey_id name price age_years origin type body richness smoke sweetness image_path')
+                .limit(200)
+                .lean();
             
             return whiskeys.map(w => ({
                 id: w.whiskey_id,
@@ -55,7 +111,8 @@ class WhiskeyRecommendationService {
                 body: w.body || 0,
                 richness: w.richness || 0,
                 smoke: w.smoke || 0,
-                sweetness: w.sweetness || 0
+                sweetness: w.sweetness || 0,
+                image_path: w.image_path || null
             }));
         } catch (error) {
             console.error('가격별 위스키 조회 실패:', error);
@@ -81,7 +138,10 @@ class WhiskeyRecommendationService {
                 query.sweetness = { $gte: Math.max(0, targetSweetness - tolerance), $lte: Math.min(5, targetSweetness + tolerance) };
             }
 
-            const whiskeys = await Whiskey.find(query).lean();
+            const whiskeys = await Whiskey
+                .find(query, 'whiskey_id name price age_years origin type body richness smoke sweetness image_path')
+                .limit(200)
+                .lean();
             
             return whiskeys.map(w => ({
                 id: w.whiskey_id,
@@ -93,7 +153,8 @@ class WhiskeyRecommendationService {
                 body: w.body || 0,
                 richness: w.richness || 0,
                 smoke: w.smoke || 0,
-                sweetness: w.sweetness || 0
+                sweetness: w.sweetness || 0,
+                image_path: w.image_path || null
             }));
         } catch (error) {
             console.error('맛 프로필별 위스키 조회 실패:', error);
@@ -104,9 +165,10 @@ class WhiskeyRecommendationService {
     async getWhiskeysByOrigin(origin) {
         try {
             await this.ensureConnection();
-            const whiskeys = await Whiskey.find({
-                origin: new RegExp(origin, 'i')
-            }).lean();
+            const whiskeys = await Whiskey
+                .find({ origin: new RegExp(origin, 'i') }, 'whiskey_id name price age_years origin type body richness smoke sweetness image_path')
+                .limit(200)
+                .lean();
             
             return whiskeys.map(w => ({
                 id: w.whiskey_id,
@@ -118,7 +180,8 @@ class WhiskeyRecommendationService {
                 body: w.body || 0,
                 richness: w.richness || 0,
                 smoke: w.smoke || 0,
-                sweetness: w.sweetness || 0
+                sweetness: w.sweetness || 0,
+                image_path: w.image_path || null
             }));
         } catch (error) {
             console.error('원산지별 위스키 조회 실패:', error);
@@ -129,9 +192,10 @@ class WhiskeyRecommendationService {
     async getWhiskeysByType(type) {
         try {
             await this.ensureConnection();
-            const whiskeys = await Whiskey.find({
-                type: new RegExp(type, 'i')
-            }).lean();
+            const whiskeys = await Whiskey
+                .find({ type: new RegExp(type, 'i') }, 'whiskey_id name price age_years origin type body richness smoke sweetness image_path')
+                .limit(200)
+                .lean();
             
             return whiskeys.map(w => ({
                 id: w.whiskey_id,
@@ -143,7 +207,8 @@ class WhiskeyRecommendationService {
                 body: w.body || 0,
                 richness: w.richness || 0,
                 smoke: w.smoke || 0,
-                sweetness: w.sweetness || 0
+                sweetness: w.sweetness || 0,
+                image_path: w.image_path || null
             }));
         } catch (error) {
             console.error('타입별 위스키 조회 실패:', error);

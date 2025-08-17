@@ -41,8 +41,8 @@ class WhiskeyAgent {
                     new WhiskeyRecommendationService(),
                 ),
             ],
-            structured_output: typia.json.schemas<[IWhiskeyRecommendation]>(),
-        });
+            structured_output: typia.json.schemas<[IWhiskeyRecommendation]>() as any,
+        } as any);
     }
 
     async getRecommendation(userQuery: string) {

@@ -95,9 +95,9 @@ class WhiskeyApp {
             });
         });
 
-        // 추천 버튼
+        // 추천 버튼: recommend 페이지에서는 페이지 전용 스크립트가 처리하므로 전역 바인딩 생략
         const recommendBtn = document.getElementById('recommend-btn');
-        if (recommendBtn) {
+        if (recommendBtn && window.location.pathname !== '/recommend') {
             recommendBtn.addEventListener('click', () => {
                 this.handleRecommend();
             });
@@ -701,6 +701,27 @@ function openWhiskeyDetail(whiskeyId) {
     window.location.href = `/whiskey/${whiskeyId}`;
 }
 
+// 데이터셋으로부터 모달 열기 (recommend 페이지 카드 클릭 대응)
+function openWhiskeyModalFromDataset(cardEl) {
+    const whiskey = {
+        id: cardEl.dataset.id,
+        name: cardEl.dataset.name,
+        price: Number(cardEl.dataset.price || 0),
+        age: cardEl.dataset.age ? Number(cardEl.dataset.age) : null,
+        origin: cardEl.dataset.origin,
+        type: cardEl.dataset.type,
+        reason: cardEl.dataset.reason,
+        image_path: cardEl.dataset.image || '',
+        scores: {
+            body: Number(cardEl.dataset.body || 0),
+            richness: Number(cardEl.dataset.richness || 0),
+            smoke: Number(cardEl.dataset.smoke || 0),
+            sweetness: Number(cardEl.dataset.sweetness || 0)
+        }
+    };
+    openWhiskeyModal(whiskey);
+}
+
 // 앱 초기화
 document.addEventListener('DOMContentLoaded', () => {
     new WhiskeyApp();
@@ -1049,6 +1070,28 @@ function openWhiskeyModal(whiskey) {
     type.textContent = whiskey.type;
     reason.textContent = whiskey.reason || '추천 이유가 제공되지 않았습니다.';
     
+    // 이미지 표시
+    const imageContainer = document.querySelector('#whiskey-modal .whiskey-image-large .whiskey-icon');
+    const imageWrapper = document.querySelector('#whiskey-modal .whiskey-image-large');
+    if (imageWrapper) {
+        let imgEl = imageWrapper.querySelector('img');
+        const imageSrc = whiskey.image_path || '';
+        if (imageSrc) {
+            if (!imgEl) {
+                imgEl = document.createElement('img');
+                imgEl.onerror = () => { if (imgEl) imgEl.style.display = 'none'; if (imageContainer) imageContainer.style.display = 'block'; };
+                imageWrapper.insertBefore(imgEl, imageContainer);
+            }
+            imgEl.src = imageSrc;
+            imgEl.alt = whiskey.name;
+            imgEl.style.display = 'block';
+            if (imageContainer) imageContainer.style.display = 'none';
+        } else {
+            if (imgEl) imgEl.style.display = 'none';
+            if (imageContainer) imageContainer.style.display = 'block';
+        }
+    }
+
     // 맛 프로필 바 설정
     if (whiskey.scores) {
         setFlavorBar('modal-body-bar', 'modal-body-score', whiskey.scores.body);

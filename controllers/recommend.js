@@ -15,7 +15,8 @@ const getRecommendPage = asyncHandler(async (req, res) => {
 // @route POST /api/recommend
 const getAIRecommendation = asyncHandler(async (req, res) => {
     try {
-        const { query, usePreferences, preferences } = req.body;
+        const { query, usePreferences, preferences, limit } = req.body;
+        const limitNum = Math.min(20, Math.max(1, parseInt(limit, 10) || 10));
         
         if (!query || query.trim() === '') {
             return res.status(400).json({
@@ -38,7 +39,7 @@ ${preferenceContext}
         }
 
         const whiskeyAgent = new WhiskeyAgent();
-        const result = await whiskeyAgent.getRecommendation(enhancedQuery);
+        const result = await whiskeyAgent.getRecommendation(enhancedQuery, limitNum);
         
         res.json({
             success: result.success,

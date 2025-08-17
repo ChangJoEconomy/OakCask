@@ -16,23 +16,8 @@ router.get('/test', (req, res) => {
 router.get('/all', async (req, res) => {
     console.log('위스키 전체 조회 API 호출됨');
     try {
-        const whiskeys = await whiskeyService.getAllWhiskeys();
-        console.log(`위스키 조회 결과: ${whiskeys.length}개`);
-        
-        // 토큰 절약을 위해 최대 20개로 제한하고 필수 정보만 반환
-        const limitedWhiskeys = whiskeys.slice(0, 20).map(w => ({
-            id: w.id,
-            name: w.name,
-            price: w.price,
-            age: w.age,
-            origin: w.origin,
-            type: w.type,
-            body: w.body,
-            richness: w.richness,
-            smoke: w.smoke,
-            sweetness: w.sweetness
-        }));
-        
+        const limitedWhiskeys = await whiskeyService.getAllWhiskeysLimited(20);
+        console.log(`위스키 조회 결과: ${limitedWhiskeys.length}개`);
         res.json(limitedWhiskeys);
     } catch (error) {
         console.error('위스키 조회 오류:', error);
@@ -62,7 +47,8 @@ router.get('/price', async (req, res) => {
             body: w.body,
             richness: w.richness,
             smoke: w.smoke,
-            sweetness: w.sweetness
+            sweetness: w.sweetness,
+            image_path: w.image_path
         }));
         
         console.log(`가격대별 검색 결과: ${optimizedWhiskeys.length}개 반환`);
@@ -108,7 +94,8 @@ router.get('/origin', async (req, res) => {
             body: w.body,
             richness: w.richness,
             smoke: w.smoke,
-            sweetness: w.sweetness
+            sweetness: w.sweetness,
+            image_path: w.image_path
         }));
         
         console.log(`원산지별 검색 결과: ${whiskeys.length}개 반환`);

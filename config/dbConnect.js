@@ -3,7 +3,14 @@ require('dotenv').config();
 
 const dbConnect = async () => {
     try {
-        await mongoose.connect(process.env.DB_CONNECT);
+        await mongoose.connect(process.env.DB_CONNECT, {
+            serverSelectionTimeoutMS: 5000,
+            socketTimeoutMS: 20000,
+            maxPoolSize: 10,
+            minPoolSize: 2,
+            family: 4,
+            autoIndex: true,
+        });
         console.log("DB connected");
     }
     catch (error) {

@@ -1,12 +1,15 @@
+require('dotenv').config({ override: true });
 const { Agentica, assertHttpController } = require("@agentica/core");
-const OpenAI = require("openai");
+const OpenAI = require("openai").OpenAI;
 const WhiskeyRecommendationService = require('./WhiskeyRecommendationService');
 
 class WhiskeyAgent {
     constructor() {
         this.whiskeyService = new WhiskeyRecommendationService();
+        const apiKey = (process.env.OPENAI_API_KEY || '').trim();
+        console.log('[AI] OPENAI_API_KEY loaded:', apiKey.length > 0);
         this.openai = new OpenAI({ 
-            apiKey: process.env.OPENAI_API_KEY 
+            apiKey
         });
         this.whiskeyCache = null;
         
@@ -58,9 +61,10 @@ class WhiskeyAgent {
             }
         };
 
+        const apiKey = (process.env.OPENAI_API_KEY || '').trim();
         this.agent = new Agentica({
             vendor: {
-                api: new OpenAI({ apiKey: process.env.OPENAI_API_KEY }),
+                api: new OpenAI({ apiKey }),
                 model: "gpt-4o-mini",
             },
             controllers: [
@@ -74,7 +78,7 @@ class WhiskeyAgent {
         });
     }
 
-    async getRecommendation(userQuery) {
+    async getRecommendation(userQuery, limit = 10) {
         try {
             console.log('사용자 질문:', userQuery);
             
@@ -84,10 +88,10 @@ class WhiskeyAgent {
             
             if (complexity.isComplex) {
                 // 복잡한 조건 → Agentica 사용
-                return await this.getAgenticaRecommendation(userQuery);
+                return await this.getAgenticaRecommendation(userQuery, limit);
             } else {
                 // 간단한 조건 → 빠른 로컬 처리
-                return await this.getFastRecommendation(userQuery, complexity);
+                return await this.getFastRecommendation(userQuery, complexity, limit);
             }
         } catch (error) {
             console.error('AI 추천 오류:', error);
@@ -166,7 +170,7 @@ class WhiskeyAgent {
         };
     }
 
-    async getAgenticaRecommendation(userQuery) {
+    async getAgenticaRecommendation(userQuery, limit = 10) {
         console.log('🤖 Agentica 모드: 복잡한 조건 처리');
         
         const systemPrompt = `
@@ -206,20 +210,20 @@ JSON 응답 형식:
 사용자 질문: "${userQuery}"
 `;
 
-        const response = await this.agent.conversate(systemPrompt);
+        const response = await this.agent.conversate(systemPrompt + `\n\n요청 사항: 조건에 가장 적합한 위스키를 최대 ${limit}개까지 추천하세요.`);
         console.log('Agentica 응답 완료');
         
-        return this.parseAgenticaResponse(response);
+        return this.parseAgenticaResponse(response, limit);
     }
 
-    async getFastRecommendation(userQuery, complexity) {
+    async getFastRecommendation(userQuery, complexity, limit = 10) {
         console.log('⚡ 빠른 모드: 간단한 조건 처리');
         
-        // 캐시 로드
+        // 캐시 로드 (전체 로드 대신 샘플 기반으로 초기화)
         if (!this.whiskeyCache) {
             console.log('위스키 데이터 캐시 로드 중...');
-            const allWhiskeys = await this.whiskeyService.getAllWhiskeys();
-            this.whiskeyCache = this.smartSampling(allWhiskeys, 80);
+            const sampledWhiskeys = await this.whiskeyService.getSampleWhiskeys(200);
+            this.whiskeyCache = this.smartSampling(sampledWhiskeys, 80);
             console.log(`캐시 완료: ${this.whiskeyCache.length}개`);
         }
 
@@ -227,7 +231,7 @@ JSON 응답 형식:
         const relevantWhiskeys = this.filterRelevantWhiskeys(userQuery, this.whiskeyCache);
         
         const systemPrompt = `
-위스키 추천 AI입니다. 아래 위스키 목록에서 사용자 질문에 맞는 3-4개를 선택해 추천하세요.
+위스키 추천 AI입니다. 아래 위스키 목록에서 사용자 질문에 가장 잘 맞는 ${limit}개 이내를 선택해 추천하세요.
 
 위스키 목록:
 ${JSON.stringify(relevantWhiskeys, null, 2)}
@@ -261,7 +265,7 @@ JSON 형식으로 응답:
         });
 
         const aiResponse = response.choices[0].message.content;
-        return this.parseRecommendation(aiResponse);
+        return this.parseRecommendation(aiResponse, limit);
     }
 
     filterRelevantWhiskeys(query, whiskeys) {
@@ -352,7 +356,7 @@ JSON 형식으로 응답:
         return result;
     }
 
-    parseRecommendation(response) {
+    parseRecommendation(response, limit = 10) {
         try {
             // JSON 부분만 추출
             const jsonMatch = response.match(/\{[\s\S]*\}/);
@@ -365,7 +369,7 @@ JSON 형식으로 응답:
             return {
                 success: true,
                 analysis: parsed.analysis || '분석 완료',
-                recommendations: parsed.recommendations || [],
+                recommendations: (parsed.recommendations || []).slice(0, limit),
                 summary: parsed.summary || '추천 완료',
                 message: (parsed.analysis || '분석 완료') + ' ' + (parsed.summary || '추천 완료')
             };
@@ -485,7 +489,7 @@ JSON 형식으로 응답:
         return selected.slice(0, count);
     }
 
-    parseAgenticaResponse(response) {
+    parseAgenticaResponse(response, limit = 10) {
         try {
             console.log('Agentica 응답 파싱 중...');
             console.log('원본 응답:', JSON.stringify(response, null, 2));
@@ -528,7 +532,7 @@ JSON 형식으로 응답:
             if (apiResults.length > 0) {
                 console.log(`API 결과 활용: ${apiResults.length}개 위스키 발견`);
                 
-                const recommendations = apiResults.slice(0, 3).map(whiskey => ({
+                const recommendations = apiResults.slice(0, limit).map(whiskey => ({
                     id: whiskey.id,
                     name: whiskey.name,
                     price: whiskey.price,
@@ -564,7 +568,7 @@ JSON 형식으로 응답:
                     return {
                         success: true,
                         analysis: parsed.analysis || 'Agentica 분석 완료',
-                        recommendations: parsed.recommendations || [],
+                        recommendations: (parsed.recommendations || []).slice(0, limit),
                         summary: parsed.summary || 'Agentica 추천 완료',
                         message: (parsed.analysis || 'Agentica 분석 완료') + ' ' + (parsed.summary || 'Agentica 추천 완료')
                     };
@@ -591,7 +595,7 @@ JSON 형식으로 응답:
                 return {
                     success: true,
                     analysis: this.extractAnalysisFromText(responseText),
-                    recommendations: this.extractRecommendationsFromAgenticaText(responseText),
+                    recommendations: this.extractRecommendationsFromAgenticaText(responseText, limit),
                     summary: 'Function calling을 통한 정확한 추천',
                     message: 'Agentica가 복잡한 조건을 분석했습니다'
                 };
@@ -602,7 +606,7 @@ JSON 형식으로 응답:
             return {
                 success: true,
                 analysis: 'Agentica 응답을 처리하는 중 문제가 발생했지만 기본 추천을 제공합니다',
-                recommendations: this.getDefaultRecommendations(),
+                recommendations: this.getDefaultRecommendations(limit),
                 summary: '기본 추천 제공',
                 message: 'Agentica 응답 처리 중 문제가 발생하여 기본 추천을 제공합니다'
             };
@@ -691,9 +695,9 @@ JSON 형식으로 응답:
             : 'Agentica가 조건에 맞춰 선택';
     }
 
-    getDefaultRecommendations() {
+    getDefaultRecommendations(limit = 10) {
         // 기본 추천 위스키들
-        return [
+        const defaults = [
             { 
                 id: "W1", 
                 name: "Tamdhu 12 Year Old", 
@@ -725,9 +729,10 @@ JSON 형식으로 응답:
                 reason: "포트 와인 캐스크 피니시로 풍부한 맛" 
             }
         ];
+        return defaults.slice(0, limit);
     }
 
-    extractRecommendationsFromAgenticaText(text) {
+    extractRecommendationsFromAgenticaText(text, limit = 10) {
         console.log('Agentica 텍스트에서 위스키 정보 추출 중...');
         const recommendations = [];
         
@@ -794,10 +799,10 @@ JSON 형식으로 응답:
         }
         
         console.log(`추출된 추천 개수: ${recommendations.length}`);
-        return recommendations.slice(0, 3);
+        return recommendations.slice(0, limit);
     }
 
-    extractRecommendationsFromText(text) {
+    extractRecommendationsFromText(text, limit = 10) {
         // 텍스트에서 위스키 정보 추출 (간단한 버전)
         const recommendations = [];
         
@@ -815,7 +820,7 @@ JSON 형식으로 응답:
             }
         });
         
-        return recommendations.slice(0, 3);
+        return recommendations.slice(0, limit);
     }
 }
 
