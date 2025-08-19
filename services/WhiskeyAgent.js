@@ -725,7 +725,7 @@ JSON 형식으로 응답:
             },
             { 
                 id: "W11", 
-                name: "Glenmorangie Quinta Ruban 14 Year Old", 
+                name: "Glenmorangie Quinta Ruban 14 Year OldPort Finish", 
                 price: 90300, 
                 age: 14, 
                 origin: "Scotland", 
