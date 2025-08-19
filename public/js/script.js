@@ -719,7 +719,72 @@ function openWhiskeyModalFromDataset(cardEl) {
             sweetness: Number(cardEl.dataset.sweetness || 0)
         }
     };
-    openWhiskeyModal(whiskey);
+    
+    openRecommendWhiskeyModal(whiskey);
+}
+
+// recommend 페이지 전용 모달 열기 함수
+function openRecommendWhiskeyModal(whiskey) {
+    // 모달 요소들 가져오기
+    const modal = document.getElementById('recommend-whiskey-modal');
+    const name = document.getElementById('recommend-modal-whiskey-name');
+    const price = document.getElementById('recommend-modal-price');
+    const age = document.getElementById('recommend-modal-age');
+    const origin = document.getElementById('recommend-modal-origin');
+    const type = document.getElementById('recommend-modal-type');
+    
+    if (!modal || !name || !price || !age || !origin || !type) {
+        return;
+    }
+    
+    // 기본 정보 설정
+    name.textContent = whiskey.name;
+    price.textContent = whiskey.price.toLocaleString() + '원';
+    age.textContent = whiskey.age ? `${whiskey.age}년` : '정보 없음';
+    origin.textContent = whiskey.origin;
+    type.textContent = whiskey.type;
+    
+    // 이미지 표시
+    const modalImage = document.getElementById('recommend-modal-whiskey-image');
+    const modalIcon = document.getElementById('recommend-modal-whiskey-icon');
+    const imageSrc = whiskey.image_path || '';
+    
+    if (imageSrc && modalImage && modalIcon) {
+        modalImage.src = imageSrc;
+        modalImage.alt = whiskey.name;
+        modalImage.style.display = 'block';
+        modalIcon.style.display = 'none';
+        
+        // 이미지 로드 실패 시 아이콘 표시
+        modalImage.onerror = function() {
+            modalImage.style.display = 'none';
+            modalIcon.style.display = 'block';
+        };
+    } else {
+        if (modalImage) modalImage.style.display = 'none';
+        if (modalIcon) modalIcon.style.display = 'block';
+    }
+
+    // 맛 프로필 바 설정
+    if (whiskey.scores) {
+        setFlavorBar('recommend-modal-body-bar', 'recommend-modal-body-score', whiskey.scores.body);
+        setFlavorBar('recommend-modal-richness-bar', 'recommend-modal-richness-score', whiskey.scores.richness);
+        setFlavorBar('recommend-modal-smoke-bar', 'recommend-modal-smoke-score', whiskey.scores.smoke);
+        setFlavorBar('recommend-modal-sweetness-bar', 'recommend-modal-sweetness-score', whiskey.scores.sweetness);
+    }
+    
+    // 모달 표시
+    modal.classList.remove('hidden');
+    document.body.style.overflow = 'hidden'; // 배경 스크롤 방지
+}
+
+// recommend 페이지 전용 모달 닫기 함수
+function closeRecommendWhiskeyModal() {
+    const modal = document.getElementById('recommend-whiskey-modal');
+    if (modal) {
+        modal.classList.add('hidden');
+        document.body.style.overflow = ''; // 스크롤 복원
+    }
 }
 
 // 앱 초기화
@@ -728,6 +793,13 @@ document.addEventListener('DOMContentLoaded', () => {
     new AuthManager();
     initializeFiltering();
 });
+
+// 전역 함수로 모달 관련 함수들을 window 객체에 추가
+window.openWhiskeyModalFromDataset = openWhiskeyModalFromDataset;
+window.openWhiskeyModal = openWhiskeyModal;
+window.closeWhiskeyModal = closeWhiskeyModal;
+window.openRecommendWhiskeyModal = openRecommendWhiskeyModal;
+window.closeRecommendWhiskeyModal = closeRecommendWhiskeyModal;
 
 // 필터링 및 정렬 기능
 function initializeFiltering() {
@@ -1071,24 +1143,44 @@ function openWhiskeyModal(whiskey) {
     reason.textContent = whiskey.reason || '추천 이유가 제공되지 않았습니다.';
     
     // 이미지 표시
-    const imageContainer = document.querySelector('#whiskey-modal .whiskey-image-large .whiskey-icon');
-    const imageWrapper = document.querySelector('#whiskey-modal .whiskey-image-large');
-    if (imageWrapper) {
-        let imgEl = imageWrapper.querySelector('img');
-        const imageSrc = whiskey.image_path || '';
-        if (imageSrc) {
-            if (!imgEl) {
-                imgEl = document.createElement('img');
-                imgEl.onerror = () => { if (imgEl) imgEl.style.display = 'none'; if (imageContainer) imageContainer.style.display = 'block'; };
-                imageWrapper.insertBefore(imgEl, imageContainer);
+    const modalImage = document.getElementById('modal-whiskey-image');
+    const modalIcon = document.getElementById('modal-whiskey-icon');
+    const imageSrc = whiskey.image_path || '';
+    
+    if (imageSrc && modalImage && modalIcon) {
+        modalImage.src = imageSrc;
+        modalImage.alt = whiskey.name;
+        modalImage.style.display = 'block';
+        modalIcon.style.display = 'none';
+        
+        // 이미지 로드 실패 시 아이콘 표시
+        modalImage.onerror = function() {
+            modalImage.style.display = 'none';
+            modalIcon.style.display = 'block';
+        };
+    } else if (modalImage && modalIcon) {
+        modalImage.style.display = 'none';
+        modalIcon.style.display = 'block';
+    } else {
+        // 기존 코드 (layout.ejs의 모달용)
+        const imageContainer = document.querySelector('#whiskey-modal .whiskey-image-large .whiskey-icon');
+        const imageWrapper = document.querySelector('#whiskey-modal .whiskey-image-large');
+        if (imageWrapper) {
+            let imgEl = imageWrapper.querySelector('img');
+            if (imageSrc) {
+                if (!imgEl) {
+                    imgEl = document.createElement('img');
+                    imgEl.onerror = () => { if (imgEl) imgEl.style.display = 'none'; if (imageContainer) imageContainer.style.display = 'block'; };
+                    imageWrapper.insertBefore(imgEl, imageContainer);
+                }
+                imgEl.src = imageSrc;
+                imgEl.alt = whiskey.name;
+                imgEl.style.display = 'block';
+                if (imageContainer) imageContainer.style.display = 'none';
+            } else {
+                if (imgEl) imgEl.style.display = 'none';
+                if (imageContainer) imageContainer.style.display = 'block';
             }
-            imgEl.src = imageSrc;
-            imgEl.alt = whiskey.name;
-            imgEl.style.display = 'block';
-            if (imageContainer) imageContainer.style.display = 'none';
-        } else {
-            if (imgEl) imgEl.style.display = 'none';
-            if (imageContainer) imageContainer.style.display = 'block';
         }
     }
 
