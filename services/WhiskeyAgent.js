@@ -200,6 +200,7 @@ JSON 응답 형식:
       "age": 숙성연수,
       "origin": "원산지",
       "type": "타입",
+      "image_path": "이미지경로",
       "scores": {"body": 점수, "richness": 점수, "smoke": 점수, "sweetness": 점수},
       "reason": "추천 이유 (40자)"
     }
@@ -247,6 +248,7 @@ JSON 형식으로 응답:
       "age": 숙성연수,
       "origin": "원산지",
       "type": "타입", 
+      "image_path": "이미지경로",
       "scores": {"body": 점수, "richness": 점수, "smoke": 점수, "sweetness": 점수},
       "reason": "추천 이유 (25자)"
     }
@@ -539,6 +541,7 @@ JSON 형식으로 응답:
                     age: whiskey.age,
                     origin: whiskey.origin,
                     type: whiskey.type,
+                    image_path: whiskey.image_path || '',
                     scores: {
                         body: whiskey.body,
                         richness: whiskey.richness,
@@ -705,6 +708,7 @@ JSON 형식으로 응답:
                 age: 12, 
                 origin: "Scotland", 
                 type: "SINGLE_MALT", 
+                image_path: "/images/tamob.12yo.jpg",
                 scores: { body: 2, richness: 3, smoke: 0, sweetness: 3 }, 
                 reason: "부드럽고 균형잡힌 맛의 입문용 위스키" 
             },
@@ -715,6 +719,7 @@ JSON 형식으로 응답:
                 age: 10, 
                 origin: "Scotland", 
                 type: "SINGLE_MALT", 
+                image_path: "/images/lrgob.10yov1.jpg",
                 scores: { body: 3, richness: 5, smoke: 5, sweetness: 2 }, 
                 reason: "강렬한 스모키 향이 특징인 아일레이 위스키" 
             },
@@ -725,6 +730,7 @@ JSON 형식으로 응답:
                 age: 14, 
                 origin: "Scotland", 
                 type: "SINGLE_MALT", 
+                image_path: "/images/gmgob.14yo.jpg",
                 scores: { body: 4, richness: 4, smoke: 0, sweetness: 3 }, 
                 reason: "포트 와인 캐스크 피니시로 풍부한 맛" 
             }
