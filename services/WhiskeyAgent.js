@@ -3,6 +3,38 @@ const { Agentica, assertHttpController } = require("@agentica/core");
 const OpenAI = require("openai").OpenAI;
 const WhiskeyRecommendationService = require('./WhiskeyRecommendationService');
 
+// 간단한 LRU 캐시 (Agentica 결과 캐시용)
+class SimpleLRUCache {
+	constructor(maxEntries = 200, ttlMs = 5 * 60 * 1000) {
+		this.maxEntries = maxEntries;
+		this.ttlMs = ttlMs;
+		this.map = new Map();
+	}
+
+	get(key) {
+		const entry = this.map.get(key);
+		if (!entry) return null;
+		if (Date.now() > entry.expiresAt) {
+			this.map.delete(key);
+			return null;
+		}
+		// recency 갱신
+		this.map.delete(key);
+		this.map.set(key, entry);
+		return entry.value;
+	}
+
+	set(key, value) {
+		const entry = { value, expiresAt: Date.now() + this.ttlMs };
+		if (this.map.has(key)) this.map.delete(key);
+		this.map.set(key, entry);
+		if (this.map.size > this.maxEntries) {
+			const firstKey = this.map.keys().next().value;
+			this.map.delete(firstKey);
+		}
+	}
+}
+
 class WhiskeyAgent {
     constructor() {
         this.whiskeyService = new WhiskeyRecommendationService();
@@ -12,9 +44,59 @@ class WhiskeyAgent {
             apiKey
         });
         this.whiskeyCache = null;
+        this.agenticaCache = new SimpleLRUCache(200, 5 * 60 * 1000);
         
         // Agentica 설정 (복잡한 조건용)
         this.setupAgentica();
+    }
+
+    // Fast 모드 보강: 추천 결과가 limit 미만이면 후보에서 조건에 맞는 항목을 추가하여 정확히 limit개를 맞춘다
+    ensureFastLimit(recommendations, candidates, limit, userQuery) {
+        if (!Array.isArray(recommendations)) return [];
+        const uniqById = new Set(recommendations.map(r => r.id));
+
+        // 이미 포함된 항목 제외한 후보 구성
+        const remaining = (candidates || []).filter(c => !uniqById.has(c.id));
+
+        // 간단한 관련성 점수: 키워드 일치 + 가격 근접 + 맛 프로필 힌트
+        const lowerQuery = (userQuery || '').toLowerCase();
+        const score = (w) => {
+            let s = 0;
+            if (lowerQuery.includes('스모키') || lowerQuery.includes('피트')) s += (w.smoke || 0) * 2;
+            if (lowerQuery.includes('부드러운')) s += (5 - (w.smoke || 0)) + (3 - Math.abs((w.body || 0) - 2));
+            if (lowerQuery.includes('달콤')) s += (w.sweetness || 0) * 2;
+            if (lowerQuery.includes('라이트')) s += (5 - (w.body || 0));
+            if (lowerQuery.includes('풍부')) s += (w.richness || 0);
+            // 가격 키워드가 있다면 대략적인 상한 고려
+            const pm = lowerQuery.match(/(\d+)만원|((\d{5,}))원/);
+            if (pm) {
+                const maxP = pm[1] ? parseInt(pm[1]) * 10000 : parseInt(pm[2]);
+                if (w.price && maxP) s += (w.price <= maxP ? 2 : 0);
+            }
+            return s;
+        };
+
+        const sorted = remaining
+            .map(w => ({ w, s: score(w) }))
+            .sort((a, b) => b.s - a.s)
+            .map(x => x.w);
+
+        const need = Math.max(0, limit - recommendations.length);
+        const fillers = sorted.slice(0, need).map(w => ({
+            id: w.id,
+            name: w.name,
+            price: w.price,
+            age: w.age,
+            origin: w.origin,
+            type: w.type,
+            image_path: w.image_path || '',
+            scores: { body: w.body, richness: w.richness, smoke: w.smoke, sweetness: w.sweetness },
+            reason: '부족한 수를 후보에서 보강'
+        }));
+
+        const finalList = [...recommendations, ...fillers].slice(0, limit);
+        console.log(`⚙️ Fast 보강 결과: 원본 ${recommendations.length}개 + 보강 ${fillers.length}개 = 최종 ${finalList.length}개`);
+        return finalList;
     }
 
     setupAgentica() {
@@ -65,7 +147,7 @@ class WhiskeyAgent {
         this.agent = new Agentica({
             vendor: {
                 api: new OpenAI({ apiKey }),
-                model: "gpt-4o-mini",
+                model: "gpt-4.1-mini",
             },
             controllers: [
                 assertHttpController({
@@ -80,18 +162,34 @@ class WhiskeyAgent {
 
     async getRecommendation(userQuery, limit = 10) {
         try {
+            const t0 = Date.now();
             console.log('사용자 질문:', userQuery);
             
             // 1. 질문 복잡도 분석
             const complexity = this.analyzeQueryComplexity(userQuery);
             console.log('질문 복잡도:', complexity);
             
+            const t1 = Date.now();
             if (complexity.isComplex) {
-                // 복잡한 조건 → Agentica 사용
-                return await this.getAgenticaRecommendation(userQuery, limit);
+                // 복잡한 조건 → Agentica 사용 (실패시 Fast 모드로 fallback)
+                try {
+                    const a0 = Date.now();
+                    return await this.getAgenticaRecommendation(userQuery, limit);
+                } catch (agenticaError) {
+                    console.warn('🚨 Agentica 실패, 빠른 모드로 전환:', agenticaError.message);
+                    const f0 = Date.now();
+                    const out = await this.getFastRecommendation(userQuery, complexity, limit);
+                    const f1 = Date.now();
+                    console.log(`⏱️ Fast fallback 소요: ${f1 - f0}ms (분석: ${t1 - t0}ms)`);
+                    return out;
+                }
             } else {
                 // 간단한 조건 → 빠른 로컬 처리
-                return await this.getFastRecommendation(userQuery, complexity, limit);
+                const f0 = Date.now();
+                const out = await this.getFastRecommendation(userQuery, complexity, limit);
+                const f1 = Date.now();
+                console.log(`⏱️ Fast 전체 소요: ${f1 - f0}ms (분석: ${t1 - t0}ms)`);
+                return out;
             }
         } catch (error) {
             console.error('AI 추천 오류:', error);
@@ -172,6 +270,12 @@ class WhiskeyAgent {
 
     async getAgenticaRecommendation(userQuery, limit = 10) {
         console.log('🤖 Agentica 모드: 복잡한 조건 처리');
+        const cacheKey = `ag:${limit}:${userQuery.trim()}`;
+        const cached = this.agenticaCache.get(cacheKey);
+        if (cached) {
+            console.log('🧠 Agentica 캐시 히트');
+            return cached;
+        }
         
         const systemPrompt = `
 위스키 추천 AI입니다. whiskey_database 함수들을 사용해 사용자 요청에 맞는 위스키를 찾아 추천하세요.
@@ -189,88 +293,128 @@ class WhiskeyAgent {
 3. 빈 결과가 나오면 조건을 완화하여 재검색
 4. 여러 조건을 조합하여 최적의 결과 도출
 
-JSON 응답 형식:
+반드시 지킬 사항:
+- 사용자가 요청한 정확한 개수만큼 추천하세요(적거나 많지 않게).
+- 출력은 JSON 객체만 작성하세요(추가 텍스트 금지).
+- 가급적 한 번의 API 호출로 충분히 후보를 수집하고, 부족한 경우에만 1회 완화 재검색 후 종료하세요(총 execute 최대 2회).
+- 최종 결과는 id 목록과 이유만 반환하세요.
+
+반환 JSON 형식(엄격):
 {
   "analysis": "질문 분석 (50자)",
-  "recommendations": [
-    {
-      "id": "위스키ID",
-      "name": "위스키명",
-      "price": 가격,
-      "age": 숙성연수,
-      "origin": "원산지",
-      "type": "타입",
-      "image_path": "이미지경로",
-      "scores": {"body": 점수, "richness": 점수, "smoke": 점수, "sweetness": 점수},
-      "reason": "추천 이유 (40자)"
-    }
-  ],
+  "ids": ["ID1", "ID2", "..."],
+  "reasons": { "ID1": "추천 이유 (40자)", "ID2": "..." },
   "summary": "추천 요약 (60자)"
 }
 
 사용자 질문: "${userQuery}"
 `;
 
-        const response = await this.agent.conversate(systemPrompt + `\n\n요청 사항: 조건에 가장 적합한 위스키를 최대 ${limit}개까지 추천하세요.`);
+        // 호출 상한을 프롬프트로도 명시
+        const promptTail = `\n\n요청 사항: 조건에 가장 적합한 위스키를 정확히 ${limit}개 추천하세요. 반드시 ${limit}개를 모두 추천해야 합니다.\n` +
+            `검색은 가급적 단일 호출로 충분히 수집하고, 결과가 부족할 때에만 1회 완화 재검색하세요(총 execute 최대 2회).\n` +
+            `출력은 위 JSON 스키마만 사용하세요.`;
+
+        const response = await this.agent.conversate(systemPrompt + promptTail);
         console.log('Agentica 응답 완료');
         
-        return this.parseAgenticaResponse(response, limit);
+        const parsed = await this.parseAgenticaResponseIdsFirst(response, limit);
+        // 캐시 저장(성공 시에만)
+        if (parsed && parsed.success) this.agenticaCache.set(cacheKey, parsed);
+        return parsed;
     }
 
     async getFastRecommendation(userQuery, complexity, limit = 10) {
+        const T0 = Date.now();
         console.log('⚡ 빠른 모드: 간단한 조건 처리');
         
         // 캐시 로드 (전체 로드 대신 샘플 기반으로 초기화)
+        const C0 = Date.now();
         if (!this.whiskeyCache) {
             console.log('위스키 데이터 캐시 로드 중...');
-            const sampledWhiskeys = await this.whiskeyService.getSampleWhiskeys(200);
-            this.whiskeyCache = this.smartSampling(sampledWhiskeys, 80);
+            const sampledWhiskeys = await this.whiskeyService.getSampleWhiskeys(300);
+            this.whiskeyCache = this.smartSampling(sampledWhiskeys, 120);
             console.log(`캐시 완료: ${this.whiskeyCache.length}개`);
         }
+        const C1 = Date.now();
 
         // 빠른 필터링
-        const relevantWhiskeys = this.filterRelevantWhiskeys(userQuery, this.whiskeyCache);
+        const F0 = Date.now();
+        const relevantWhiskeys = this.filterRelevantWhiskeys(userQuery, this.whiskeyCache, limit);
+        const F1 = Date.now();
+
+        // 후보 페이로드 슬림화(id/name/핵심스코어/가격/원산지/타입)
+        const candidateView = relevantWhiskeys.map(w => ({
+            id: w.id,
+            name: w.name,
+            price: w.price,
+            origin: w.origin,
+            type: w.type,
+            scores: {
+                body: w.body || 0,
+                richness: w.richness || 0,
+                smoke: w.smoke || 0,
+                sweetness: w.sweetness || 0
+            }
+        }));
+        // 상세 정보 매핑(이미지 포함)
+        const fullDetailsMap = new Map(relevantWhiskeys.map(w => [w.id, w]));
         
         const systemPrompt = `
-위스키 추천 AI입니다. 아래 위스키 목록에서 사용자 질문에 가장 잘 맞는 ${limit}개 이내를 선택해 추천하세요.
+위스키 추천 AI입니다. 아래 후보 목록에서 사용자 질문에 가장 잘 맞는 위스키를 정확히 ${limit}개 선택해 추천하세요.
 
-위스키 목록:
-${JSON.stringify(relevantWhiskeys, null, 2)}
+중요 지침:
+- 반드시 ${limit}개의 위스키를 추천하세요(적거나 많지 않게).
+- 출력은 반드시 JSON 객체만 반환하세요(추가 텍스트 금지).
+- 아래 후보는 간소화된 정보입니다. 선택은 id를 기준으로 하되, 이유는 간결히 작성하세요.
 
-JSON 형식으로 응답:
+후보 목록(간소화):
+${JSON.stringify(candidateView, null, 2)}
+
+반환 JSON 형식(엄격):
 {
   "analysis": "질문 분석 (30자)",
-  "recommendations": [
-    {
-      "id": "위스키ID",
-      "name": "위스키명",
-      "price": 가격,
-      "age": 숙성연수,
-      "origin": "원산지",
-      "type": "타입", 
-      "image_path": "이미지경로",
-      "scores": {"body": 점수, "richness": 점수, "smoke": 점수, "sweetness": 점수},
-      "reason": "추천 이유 (25자)"
-    }
-  ],
+  "ids": ["ID1", "ID2", "ID3", "..."],
+  "reasons": { "ID1": "선정 이유(25자)", "ID2": "..." },
   "summary": "요약 (40자)"
 }
 
 질문: "${userQuery}"
 `;
 
+        // 요청 개수에 따라 max_tokens 동적 조정
+        const maxTokens = Math.max(1000, limit * 150 + 500); // 위스키당 150토큰 + 기본 500토큰
+        console.log(`⚡ 빠른 모드 설정: 요청 ${limit}개, max_tokens: ${maxTokens}, 후보 위스키: ${relevantWhiskeys.length}개`);
+        
+        const O0 = Date.now();
         const response = await this.openai.chat.completions.create({
-            model: "gpt-4o-mini",
+            model: "gpt-4.1-mini",
             messages: [{ role: "system", content: systemPrompt }],
             temperature: 0.7,
-            max_tokens: 1000
+            max_tokens: maxTokens,
+            response_format: { type: "json_object" }
         });
+        const O1 = Date.now();
 
         const aiResponse = response.choices[0].message.content;
-        return this.parseRecommendation(aiResponse, limit);
+        console.log(`🤖 OpenAI 응답 길이: ${aiResponse.length}자`);
+        console.log(`🤖 OpenAI 응답 끝부분 확인:`, aiResponse.slice(-200));
+
+        const P0 = Date.now();
+        const parsed = this.parseFastRecommendation(aiResponse, limit, fullDetailsMap);
+        const P1 = Date.now();
+        if (!parsed.success) {
+            return parsed;
+        }
+
+        // AI가 요청 개수보다 적게 추천한 경우, 후보 풀이에서 자동 보강하여 정확히 limit개를 맞춘다
+        const topped = this.ensureFastLimit(parsed.recommendations, relevantWhiskeys, limit, userQuery);
+        const T1 = Date.now();
+        console.log(`⏱️ Fast 단계별(ms) 캐시:${C1 - C0} 필터:${F1 - F0} 프롬프트+호출:${O1 - O0} 파싱:${P1 - P0} 총:${T1 - T0}`);
+        return { ...parsed, recommendations: topped };
     }
 
-    filterRelevantWhiskeys(query, whiskeys) {
+    filterRelevantWhiskeys(query, whiskeys, limit = 10) {
         const lowerQuery = query.toLowerCase();
         console.log('필터링 시작:', lowerQuery);
         
@@ -346,45 +490,101 @@ JSON 형식으로 응답:
             }
         }
         
-        // 필터링 결과가 너무 적으면 조건 완화
-        if (filtered.length < 3) {
-            console.log('결과가 적어서 조건 완화');
-            filtered = whiskeys.slice(0, 10); // 상위 10개 반환
+        // 필터링 결과가 요청 개수보다 적으면 조건 완화
+        const minRequired = Math.max(limit * 1.5, 10); // 요청의 1.5배 이상 또는 최소 10개
+        if (filtered.length < minRequired) {
+            console.log(`결과가 부족해서 조건 완화: ${filtered.length}개 → 요구사항: ${minRequired}개 이상`);
+            filtered = whiskeys.slice(0, Math.max(20, limit * 2)); // 최소 20개 또는 limit의 2배
         }
         
-        // 관련성 높은 순으로 정렬 후 최대 15개 반환
-        const result = filtered.slice(0, 15);
-        console.log('최종 반환 개수:', result.length);
+        // 관련성 높은 순으로 정렬 후 AI가 선택할 수 있도록 충분한 후보 제공
+        const maxCandidates = Math.max(15, limit * 1.5); // 최소 15개 또는 limit의 1.5배
+        const result = filtered.slice(0, maxCandidates);
+        console.log(`최종 반환 개수: ${result.length}개 (요청: ${limit}개)`);
         return result;
     }
 
     parseRecommendation(response, limit = 10) {
+        let jsonMatch = null;
         try {
             // JSON 부분만 추출
-            const jsonMatch = response.match(/\{[\s\S]*\}/);
+            jsonMatch = response.match(/\{[\s\S]*\}/);
             if (!jsonMatch) {
                 throw new Error('JSON 형식을 찾을 수 없습니다');
             }
             
             const parsed = JSON.parse(jsonMatch[0]);
+            const rawRecommendations = parsed.recommendations || [];
+            const finalRecommendations = rawRecommendations.slice(0, limit);
+            
+            console.log(`📋 파싱 결과: AI가 추천한 개수 ${rawRecommendations.length}개, 최종 반환 ${finalRecommendations.length}개 (요청: ${limit}개)`);
             
             return {
                 success: true,
                 analysis: parsed.analysis || '분석 완료',
-                recommendations: (parsed.recommendations || []).slice(0, limit),
+                recommendations: finalRecommendations,
                 summary: parsed.summary || '추천 완료',
                 message: (parsed.analysis || '분석 완료') + ' ' + (parsed.summary || '추천 완료')
             };
             
         } catch (error) {
             console.error('응답 파싱 오류:', error);
+            console.error('파싱 실패한 응답:', response);
+            console.error('JSON 매치 결과:', jsonMatch ? jsonMatch[0] : 'JSON 매치 실패');
             return {
                 success: false,
                 analysis: '응답 처리 오류',
                 recommendations: [],
                 summary: '다시 시도해주세요',
-                message: 'AI 응답을 처리하는 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.'
+                message: `AI 응답을 처리하는 중 오류가 발생했습니다: ${error.message}`
             };
+        }
+    }
+
+    // Fast 모드 JSON 전용 파서: { analysis, ids:[], reasons:{}, summary }
+    parseFastRecommendation(response, limit, detailMap) {
+        try {
+            let text = response;
+            // 일부 모델이 텍스트를 덧붙일 가능성 방지: 중괄호 블록만 추출 시도
+            const m = text.match(/\{[\s\S]*\}/);
+            if (m) text = m[0];
+            const parsed = JSON.parse(text);
+
+            const ids = Array.isArray(parsed.ids) ? parsed.ids.slice(0, limit) : [];
+            const reasons = parsed.reasons || {};
+
+            // id를 상세 객체로 치환
+            const recs = ids
+                .map(id => detailMap.get(id))
+                .filter(Boolean)
+                .map(w => ({
+                    id: w.id,
+                    name: w.name,
+                    price: w.price,
+                    age: w.age,
+                    origin: w.origin,
+                    type: w.type,
+                    image_path: w.image_path || '',
+                    scores: {
+                        body: w.body ?? (w.scores?.body ?? 0),
+                        richness: w.richness ?? (w.scores?.richness ?? 0),
+                        smoke: w.smoke ?? (w.scores?.smoke ?? 0),
+                        sweetness: w.sweetness ?? (w.scores?.sweetness ?? 0)
+                    },
+                    reason: reasons[w.id] || '선정'
+                }));
+
+            console.log(`📋 Fast(JSON) 파싱: ids ${ids.length}개, 매핑 ${recs.length}개`);
+            return {
+                success: true,
+                analysis: parsed.analysis || '분석 완료',
+                recommendations: recs,
+                summary: parsed.summary || '추천 완료',
+                message: (parsed.analysis || '분석 완료') + ' ' + (parsed.summary || '추천 완료')
+            };
+        } catch (e) {
+            console.warn('⚠️ Fast(JSON) 파싱 실패, 구 파서로 폴백:', e.message);
+            return this.parseRecommendation(response, limit);
         }
     }
 
@@ -532,7 +732,7 @@ JSON 형식으로 응답:
             
             // API 결과가 있으면 이를 활용
             if (apiResults.length > 0) {
-                console.log(`API 결과 활용: ${apiResults.length}개 위스키 발견`);
+                console.log(`🤖 Agentica API 결과 활용: ${apiResults.length}개 위스키 발견 (요청: ${limit}개)`);
                 
                 const recommendations = apiResults.slice(0, limit).map(whiskey => ({
                     id: whiskey.id,
@@ -550,6 +750,8 @@ JSON 형식으로 응답:
                     },
                     reason: this.generateReasonFromAnalysis(whiskey, responseText)
                 }));
+                
+                console.log(`🤖 Agentica 최종 추천: ${recommendations.length}개 반환 (요청: ${limit}개)`);
                 
                 return {
                     success: true,
@@ -623,6 +825,93 @@ JSON 형식으로 응답:
                 summary: '다시 시도해주세요',
                 message: 'Agentica 응답을 처리하는 중 오류가 발생했습니다.'
             };
+        }
+    }
+
+    // Agentica 응답 파서(우선 ids/reasons JSON 사용, 실패 시 기존 로직 폴백)
+    async parseAgenticaResponseIdsFirst(response, limit = 10) {
+        try {
+            // conversate 응답에서 describe 텍스트 또는 message 중 JSON 추출 시도
+            let responseText = '';
+            if (Array.isArray(response)) {
+                const describeMessages = response.filter(item => item.type === 'describe');
+                if (describeMessages.length > 0) {
+                    responseText = describeMessages[describeMessages.length - 1].text || '';
+                }
+            } else if (typeof response === 'string') {
+                responseText = response;
+            }
+
+            const match = responseText.match(/\{[\s\S]*\}/);
+            if (!match) throw new Error('Agentica JSON 블록을 찾지 못함');
+            const parsed = JSON.parse(match[0]);
+
+            const ids = Array.isArray(parsed.ids) ? parsed.ids.slice(0, limit) : [];
+            const reasons = parsed.reasons || {};
+
+            if (ids.length === 0) throw new Error('ids 비어 있음');
+
+            // ids를 상세 정보로 조합하기 위해 DB에서 조회
+            // Agentica 경로에서는 수량이 크지 않으므로 1회 DB 조회로 상세 필드를 얻는다
+            // WhiskeyRecommendationService에 전체 조회가 있어 샘플이 아닌 전체 중에서 매핑 시도
+            // 안전을 위해 실패 시 간단 객체로 폴백
+            let recs = [];
+            try {
+                // 가능한 많은 필드를 채우기 위해 전체 리스트(필요시 최적화 고려)
+                const all = typeof this.whiskeyService.getAllWhiskeysLimited === 'function'
+                    ? await this.whiskeyService.getAllWhiskeysLimited(1000)
+                    : await this.whiskeyService.getAllWhiskeys();
+                const map = new Map(all.map(w => [w.id, w]));
+                recs = ids.map(id => {
+                    const w = map.get(id);
+                    return w ? {
+                        id: w.id,
+                        name: w.name,
+                        price: w.price,
+                        age: w.age,
+                        origin: w.origin,
+                        type: w.type,
+                        image_path: w.image_path || '',
+                        scores: { body: w.body || 0, richness: w.richness || 0, smoke: w.smoke || 0, sweetness: w.sweetness || 0 },
+                        reason: reasons[id] || '선정'
+                    } : {
+                        id,
+                        name: '',
+                        price: null,
+                        age: null,
+                        origin: '',
+                        type: '',
+                        image_path: '',
+                        scores: { body: 0, richness: 0, smoke: 0, sweetness: 0 },
+                        reason: reasons[id] || '선정'
+                    };
+                });
+            } catch (dbErr) {
+                console.warn('⚠️ Agentica 상세 매핑 실패, 간단 객체로 폴백:', dbErr.message);
+                recs = ids.map((id) => ({
+                    id,
+                    name: '',
+                    price: null,
+                    age: null,
+                    origin: '',
+                    type: '',
+                    image_path: '',
+                    scores: { body: 0, richness: 0, smoke: 0, sweetness: 0 },
+                    reason: reasons[id] || '선정'
+                }));
+            }
+
+            console.log(`📋 Agentica(JSON) 파싱: ids ${ids.length}개`);
+            return {
+                success: true,
+                analysis: parsed.analysis || 'Agentica 분석 완료',
+                recommendations: recs,
+                summary: parsed.summary || 'Agentica 추천 완료',
+                message: (parsed.analysis || 'Agentica 분석 완료') + ' ' + (parsed.summary || 'Agentica 추천 완료')
+            };
+        } catch (e) {
+            console.warn('⚠️ Agentica(JSON) 우선 파싱 실패, 기존 파서로 폴백:', e.message);
+            return this.parseAgenticaResponse(response, limit);
         }
     }
 

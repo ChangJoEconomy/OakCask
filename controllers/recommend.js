@@ -1,5 +1,7 @@
 const asyncHandler = require('express-async-handler');
-const WhiskeyAgent = require('../services/WhiskeyAgent'); // import 제거
+const WhiskeyAgent = require('../services/WhiskeyAgent'); // import 유지
+// 싱글톤 에이전트: 프로세스 생명주기 동안 재사용
+const whiskeyAgent = new WhiskeyAgent();
 
 // @desc recommend page (AI 위스키 추천)
 // @route GET /recommend
@@ -38,7 +40,6 @@ ${preferenceContext}
 위 취향 정보를 참고하여 사용자에게 맞는 위스키를 추천해주세요.`;
         }
 
-        const whiskeyAgent = new WhiskeyAgent();
         const result = await whiskeyAgent.getRecommendation(enhancedQuery, limitNum);
         
         res.json({
