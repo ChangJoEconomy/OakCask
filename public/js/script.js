@@ -773,6 +773,20 @@ function openRecommendWhiskeyModal(whiskey) {
         setFlavorBar('recommend-modal-sweetness-bar', 'recommend-modal-sweetness-score', whiskey.scores.sweetness);
     }
     
+    // 추천 이유 설정
+    const reasonElement = document.getElementById('modal-reason');
+    if (reasonElement) {
+        reasonElement.textContent = whiskey.reason || '추천 이유가 제공되지 않았습니다.';
+    }
+    
+    // 상세 페이지 버튼 설정
+    const detailBtn = document.getElementById('recommend-modal-detail-btn');
+    if (detailBtn) {
+        detailBtn.onclick = () => {
+            window.open(`/whiskey/${whiskey.id}`, '_blank');
+        };
+    }
+    
     // 모달 표시
     modal.classList.remove('hidden');
     document.body.style.overflow = 'hidden'; // 배경 스크롤 방지

@@ -18,16 +18,12 @@ body {
     display: none !important;
 }
 
-.active {
-    background-color: #4f46e5;
-    color: white;
-    border-bottom: 2px solid #4f46e5;
-}
-
 /* 탭 버튼과 네비게이션 링크만 active 스타일 적용 */
 .tab-btn.active,
 .nav-link.active {
     background-color: #4f46e5;
+    color: white;
+    border-bottom: 2px solid #4f46e5;
     color: white;
     border-bottom: 2px solid #4f46e5;
 }
@@ -542,6 +538,15 @@ body {
     font-weight: 600;
     color: #059669;
     margin-bottom: 12px;
+}
+
+/* 추천 페이지 전용 위스키 가격 스타일 */
+.recommend-whiskey-price {
+    font-size: 16px;
+    font-weight: 600;
+    color: #059669;
+    margin-bottom: 12px;
+    text-align: center;
 }
 
 .whiskey-description {
@@ -2263,7 +2268,7 @@ body {
     gap: 6px;
 }
 
-.whiskey-details .whiskey-price {
+.whiskey-details {
     color: #059669;
     font-weight: 600;
 }
